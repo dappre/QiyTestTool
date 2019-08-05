@@ -1,4 +1,5 @@
 QiyNodeLib
 Flask
+flask_sse
 pymongo
 pytest

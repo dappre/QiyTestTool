@@ -20,7 +20,7 @@ from logging import critical
 from logging import exception as logging_exception
 from os import environ
 from os import remove
-from pyqrcode import create
+#from pyqrcode import create
 from queue import Queue
 from QiyNodeLib.QiyNodeLib import node_connect
 from QiyNodeLib.QiyNodeLib import node_connect_token__create
@@ -117,7 +117,7 @@ def event_generator() -> Iterator[str]:
     for event in event_listener():
         sse = ServerSentEvent(str(event), None)
         yield sse.encode()
-        
+
 def event_listener(regexp=None) -> Iterator[str]:
     str_regexp=""
     if regexp:
@@ -157,7 +157,7 @@ def event_listener(regexp=None) -> Iterator[str]:
 
 """
    Example output:
-   
+
 event: CONNECTED_TO_ROUTER
 data: {
    "type":"CONNECTED_TO_ROUTER",
@@ -284,7 +284,7 @@ def get_new_connection_url(webhook_url,queue=''):
                 debug("    new_connection_url: '{0}'".format(new_connection_url))
         info("get_new_connection_url('%s',queue='%s') returns '%s'", webhook_url,queue,new_connection_url)
 
-        
+
     return new_connection_url
 
 def message_poller(connection_url=None,node_name=None,target=None) -> Iterator[str]:
@@ -296,7 +296,7 @@ def message_poller(connection_url=None,node_name=None,target=None) -> Iterator[s
         str_node_name=node_name
     str_target=""
     if target:
-        str_target=target    
+        str_target=target
     info("message_poller(connection_url='%s',node_name='%s',target='%s')", str_connection_url,str_node_name,str_target)
     warning("message_poller() has been disabled.")
     while False:
@@ -333,7 +333,7 @@ def qiy_nodes(node_name):
     info("qiy_node({})".format(node_name))
 
     u_redirect_url=quote_plus("https://test-einwoner.lostlemon.nl/test/qtn/Boxtel")
-    
+
     return """
 <h1>Test Node {0}</h1>
 
@@ -393,7 +393,7 @@ def qiy_nodes_action_messages(node_name):
         rolis="    <ul>\n    {}    </ul>\n".format(rolis)
         li=li+rolis
         lis=lis+li
-    
+
     return """
 <h1>Test Node {0} - Action messages</h1>
 
@@ -419,7 +419,7 @@ def qiy_nodes_action_messages_relay_options_get(node_name,b64_relay_option):
             url=relay_option
             )
     pretty_print(r)
-    
+
     return """
 <h1>Test Node {0} - Action messages - Relay options - get</h1>
 
@@ -461,7 +461,7 @@ def qiy_nodes_connections(node_name):
     info("qiy_nodes_connections({})".format(node_name))
 
     connections=qiy_nodes_connections_json(node_name)
-    
+
     return """
 <h1>Test Node {0}  Connections</h1>
 
@@ -490,7 +490,7 @@ def qiy_nodes_connections_references(node_name):
     info("qiy_nodes_connections({})".format(node_name))
 
     connections_references_json=qiy_nodes_connections_references_json(node_name)
-    
+
     return """
 <h1>Test Node {0}  Connections</h1>
 
@@ -505,7 +505,7 @@ def qiy_nodes_connections_references(node_name):
 def qiy_nodes_connect_tokens_json(node_name):
     info("qiy_nodes_connect_tokens_json({})".format(node_name))
 
-    
+
     connect_tokens_by_created={}
 
     r=node_request(endpoint_name="ctList", node_name=node_name, target=target)
@@ -521,7 +521,7 @@ def qiy_nodes_connect_tokens_json(node_name):
         sorted_connection_tokens = OrderedDict(sorted(connect_tokens_by_created.items(), key=lambda t: t[0],reverse=True))
     else:
         sorted_connection_tokens={"error": r.text }
-    
+
     return sorted_connection_tokens
 
 @app.route('/qiy_nodes/<node_name>/connect_tokens')
@@ -529,7 +529,7 @@ def qiy_nodes_connect_tokens(node_name):
     info("qiy_nodes_connect_tokens({})".format(node_name))
 
     connection_tokens=qiy_nodes_connect_tokens_json(node_name)
-    
+
     return """
 <h1>Test Node {0}  Connect Tokens</h1>
 
@@ -544,7 +544,7 @@ def qiy_nodes_connect_tokens(node_name):
 @app.route('/qiy_nodes/<node_name>/consume_connect_token')
 def qiy_nodes_consume_connect_token(node_name):
     info("qiy_nodes_consume_connect_token({})".format(node_name))
-    
+
     return """
 <h1>Test Node {0}  consume_connect_token</h1>
 
@@ -572,7 +572,7 @@ def qiy_nodes_consume_connect_token_of(node_name,producer):
         url="/qiy_nodes/{}/consume_connect_token/value/{}".format(node_name,ctjsonb64)
         li="<li>{0}, {1}: <a href=\"{3}\">{2}</a>\n".format(ct['created'],ct['useSpend'],dumps(ct['json']),url)
         lis=lis+li
-    
+
     page="""
 <h1>Test Node {0}  consume_connect_token</h1>
 
@@ -596,7 +596,7 @@ def qiy_nodes_consume_connect_token_connect_token_value(node_name,b64_connect_to
         node_name=node_name,
         target=target)
 
-    
+
     page="""
 <h1>Test Node {0} consume_connect_token</h1>
 
@@ -654,7 +654,7 @@ def qiy_nodes_events_source(node_name):
             info("Stopping events listener...")
             stop_listening.set()
             info("Events listener stopped")
-        
+
     info("next_state_event_source(): Finish")
     return Response(
         gen(node_name),
@@ -690,7 +690,7 @@ def qiy_nodes_feeds_request(node_name):
                                            url,
                                            dumps(connections[connection],indent=2))
         lis=lis+li
-    
+
     page="""
 <h1>Test Node {0}</h1>
 <h2>Feeds - request for</h2>
@@ -720,17 +720,17 @@ def qiy_nodes_feeds_request_mbox(node_name,b64_mbox_url,
     headers={
         "Content-Type": "application/json"
     }
-        
+
     r=node_request(data=dumps(body),
             headers=headers,
             node_name=node_name,
-            operation="post", 
+            operation="post",
             target=target,
             url=mbox_url
             )
     pretty_print(r)
 
-    
+
     page="""
 <h1>Test Node {0} qiy_nodes_feeds_request_mbox</h1>
 
@@ -750,7 +750,7 @@ Headers: {3}
 def qiy_nodes_messages(node_name,minutes):
     info("qiy_nodes_messages({})".format(node_name))
 
-    
+
     since=timegm(datetime.utcnow().timetuple())-(int(minutes)*60)
     print(since, datetime.utcfromtimestamp(since))
     since=since*1000
@@ -759,7 +759,7 @@ def qiy_nodes_messages(node_name,minutes):
     response_messages_array=node_get_messages(node_name=node_name, since=since, target=target, version="1")
     for r, mbox_url, msgs in response_messages_array:
         messages[mbox_url]=msgs
-    
+
     return """
 <h1>Test Node {0} Messages</h1>
 
@@ -798,7 +798,7 @@ def qiy_nodes_pids(node_name):
         link="<a href='{}'>{}</a>".format(href,references_url)
         #print("qiy_nodes_pids: link: '{}'",format(link))
         pid_json['links']['references']=link
-    
+
     return """
 <h1>Test Node {0}  Pids</h1>
 
@@ -841,7 +841,7 @@ def qiy_nodes_pids_references(node_name,ub_references_url):
         result=dumps(references_by_operation_type,indent=2)
     else:
         result=r.text
-    
+
     return """
 <h1>Test Node {0} Pids {1}</h1>
 References
@@ -884,7 +884,7 @@ def qiy_nodes_pids_references_feeds(node_name,ub_references_url,feed_id):
                     result=data.replace(">","&gt;")
     else:
         result=r.text
-    
+
     return """
 <h1>Test Node {0} Pids references Feeds</h1>
 References_url {1}<br>
@@ -907,14 +907,14 @@ def qiy_nodes_redirect_to_eformulieren(node_name,u_url):
     url=unquote(u_url)
     return_url="http://scooterlabs.com/echo"
     u_return_url=quote_plus(return_url)
-    
+
     if target=="dev2":
         ct_target="https://dev2-issuer.testonly.digital-me.nl/issuer/routes/webhook/{}".format(uuid4())
     elif target=="acc":
         ct_target="https://issuer.dolden.net/issuer/routes/webhook/{}".format(uuid4())
     else:
         ct_target="https://issuer.digital-me.nl/issuer/routes/webhook/{}".format(uuid4())
-        
+
     connect_token_json={
       "tmpSecret": "VZx57LD1mOZggDrhOBYIEA==",
       "target": ct_target,
@@ -965,7 +965,7 @@ def connection_url_event_source(webhook_url):
                 sse=ServerSentEvent(page_with_messages, None)
                 yield sse.encode()
                 sleep(1)
-                
+
     return Response(
         gen(),
         mimetype="text/event-stream")
