@@ -56,7 +56,7 @@ log_levels['ERROR']=ERROR
 log_level=DEBUG
 
 
-basicConfig(filename="fikKsKetenTest.log",
+basicConfig(filename="QiyTestTool.log",
             level=log_level,
             format='%(asctime)s %(message)s',
             datefmt='%Y/%m/%d %H:%M:%S'
@@ -82,7 +82,7 @@ info("Configuration: ok")
 debug(configuration)
 
 
-info("fikKsKetenTest:Start")
+info("Start")
 
 
 app = Flask(__name__)
@@ -312,21 +312,28 @@ def message_poller(connection_url=None,node_name=None,target=None) -> Iterator[s
 @app.route('/')
 def root():
     info("root()")
+
+    l=glob("data/*.json")
+    node_ids=[]
+    for i in l:
+        i=i.replace("\\","/")
+        node_id=findall("data/(.*?)_de_node_repository.json",i)[0]
+        node_ids.append(node_id)
+    lis=""
+    for i in node_ids:
+        lis=lis+'<li><a href="qiy_nodes/{0}">{0}</a>'.format(i)
+    
     return """
-<h1>fiKks Keten Test</h1>
-<h2>Test Helper</h2>
-Freek Driesenaar
+<h1>Qiy Test Tool</h1>
+freek.driesenaar@digital-me.nl
+8-2019
 
 <p>Test nodes:
 <ul>
-<li><a href="qiy_nodes/mgd_citizen_dev2">mgd citizen</a> (<a href="qiy_nodes/mgd_citizen_acc">acc</a>)
-<li><a href="qiy_nodes/mgd_citizen2_dev2">mgd citizen2</a> (<a href="qiy_nodes/mgd_citizen2_acc">acc</a>)
-<li><a href="qiy_nodes/mgd_dev2">mgd - Mijn Gemeente Dichtbij</a> (<a href="qiy_nodes/mgd_acc">acc</a>)
-<li><a href="qiy_nodes/mgd_eurp_dev2">eurp - Enable-U Relying Party test node</a> (<a href="qiy_nodes/mgd_eurp_ac">acc</a>)
-<li><a href="qiy_nodes/pt_usernode_fksH_de">Helden van de Wil</a> (<a href="qiy_nodes/pt_usernode_fksH_ac">acc</a>)
+{}
 </ul>
 
-"""
+""".format(lis)
 
 @app.route('/qiy_nodes/<node_name>')
 def qiy_nodes(node_name):
