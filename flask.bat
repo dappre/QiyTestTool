@@ -1,6 +1,4 @@
-set FLASK_APP=site\flask_app.py
-set PYTHONPATH=C:\cygwin64\home\Freek Driesenaar\gitbucket\QiyNodeLib\
+set FLASK_APP=QiyTestTool\site\flask_app.py
 set TARGET=dev2
 
-#cd "C:\cygwin64\home\Freek Driesenaar\gitbucket\fiKksKetenTest"
 python -m flask run
