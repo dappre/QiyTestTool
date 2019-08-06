@@ -27,8 +27,11 @@ By default, QTT checks the directory ~/QiyTestTool/data for Qiy Node Credentials
 ## Format
 
 The Qiy Node Credential of a consists of two files:
+
+```
 1. <node name>_<target environment id>_node_repository.json, for example: 'mgd_dev2_de_node_repository.json'.
 2. <node name>_<target environment id>.pem, for example: 'mgd_dev2_de.json'
+```
 
 Please contact freek.driesenaar@digital-me.nl for more information.
 
