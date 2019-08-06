@@ -15,8 +15,10 @@ This python module requires:
 1. Clone this repository, say in your home directory.
 2. Start a command line interface and enter the following commands:
 
-  cd ~/QiyTestTool
-  python3 -m pip install .
+```
+cd ~/QiyTestTool
+python3 -m pip install .
+```
 
 # Qiy Node Credentials
 
@@ -34,9 +36,11 @@ Please contact freek.driesenaar@digital-me.nl for more information.
 
 Enter the following commands to start the server:
 
-  cd ~/QiyTestTool
-  export FLASK_APP=QiyTestTool/site/flask_app.py
-  python3 -m flask run
-  
+```
+cd ~/QiyTestTool
+export FLASK_APP=QiyTestTool/site/flask_app.py
+python3 -m flask run
+```
+
 Now start a webbrowser and open the webpage https://127.0.0.1/5000
 
