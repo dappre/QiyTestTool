@@ -3,3 +3,4 @@ Flask
 flask_sse
 pymongo
 pytest
+python-dotenv
