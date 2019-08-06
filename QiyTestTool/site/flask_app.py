@@ -21,6 +21,7 @@ from logging import exception as logging_exception
 from os import environ
 from os import getenv
 from os import remove
+from os.path import expanduser
 from os.path import join
 #from pyqrcode import create
 from queue import Queue
@@ -315,7 +316,7 @@ def message_poller(connection_url=None,node_name=None,target=None) -> Iterator[s
 def root():
     info("root()")
 
-    creds_path=getenv("QTT_CREDENTIALS")
+    creds_path=expanduser(getenv("QTT_CREDENTIALS"))
     print(creds_path)
     l=glob(join(creds_path,"*.json"))
     print(l)
