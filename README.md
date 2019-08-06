@@ -47,3 +47,14 @@ python3 -m flask run
 
 Now start a webbrowser and open the webpage https://127.0.0.1/5000
 
+# ValueError: invalid literal for int() with base 16: b''
+
+When listening to events, the server may raise the following exception:
+
+'''
+ValueError: invalid literal for int() with base 16: b''
+'''
+
+This can be (temporarily) repaired by applying this change:
+https://github.com/psf/requests/issues/4248#issuecomment-429188281
+
