@@ -316,7 +316,7 @@ def message_poller(connection_url=None,node_name=None,target=None) -> Iterator[s
 def root():
     info("root()")
 
-    creds_path=expanduser(getenv("QTT_CREDENTIALS"))
+    creds_path=expanduser(getenv("QIY_CREDENTIALS"))
     l=glob(join(creds_path,"*.json"))
 
     node_ids=[]
