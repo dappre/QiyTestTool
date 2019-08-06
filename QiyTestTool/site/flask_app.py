@@ -317,16 +317,13 @@ def root():
     info("root()")
 
     creds_path=expanduser(getenv("QTT_CREDENTIALS"))
-    print(creds_path)
     l=glob(join(creds_path,"*.json"))
-    print(l)
 
     node_ids=[]
     for i in l:
         i=i.replace("\\","/")
         node_id=findall("data/(.*?)_de_node_repository.json",i)[0]
         node_ids.append(node_id)
-    print(node_ids)
     lis=""
     for i in node_ids:
         lis=lis+'<li><a href="qiy_nodes/{0}">{0}</a>'.format(i)
