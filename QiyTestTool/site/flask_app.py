@@ -365,6 +365,14 @@ def node_feed(node_name,feed_id,
         target=target)
     return r.text
 
+def node_service_catalogue(node_name):
+    headers={'Accept': 'application/json'}
+    r=node_request(endpoint_name="serviceCatalog",
+                   headers=headers,
+                   node_name=node_name,
+                   target=target)
+    return r.json()
+
 # </Candidate function(s) for QiyNodeLib>
 
 
@@ -385,6 +393,7 @@ def qiy_nodes(node_name):
 <li><a href="/qiy_nodes/{0}/events">Events</a>
 <li><a href="/qiy_nodes/{0}/feeds">Feeds</a>
 <li><a href="/qiy_nodes/{0}/messages/since/60">Messages since 1h</a> (<a href="/qiy_nodes/{0}/messages/since/1440">1 day</a>)
+<li><a href="/qiy_nodes/{0}/service_catalogue">Service Catalogue</a>
 <li><a href="/qiy_nodes/{0}/pids">Pids</a>
 <li><a href="/qiy_nodes/{0}/redirect_to_eformulieren/{1}">Redirect to Lost Lemon eFormulieren</a>
 </ul>
@@ -1023,6 +1032,26 @@ click here to redirect: <a href="{1}">{1}</a>
 <a href="/qiy_nodes/{0}">Up</a>
 
 """.format(node_name,redirect_url)
+
+
+@app.route('/qiy_nodes/<node_name>/service_catalogue')
+def qiy_nodes_service_catalogue(node_name):
+    info("{}".format(node_name))
+
+    service_catalogue=node_service_catalogue(node_name)
+
+    page="""
+<h1>Test Node {0}</h1>
+<h2>Service catalogue</h2>
+
+<pre>
+{1}
+</pre>
+<a href="/qiy_nodes/{0}/">Up</a>
+
+""".format(node_name,dumps(service_catalogue,indent=2))
+    
+    return page
 
 
 @app.route('/connection_url_event_source/<path:webhook_url>')
