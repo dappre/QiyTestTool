@@ -670,7 +670,7 @@ def qiy_nodes_connections(node_name):
 
     for i in connections:
         connection=connections[i]
-        #ub_connection=quote_plus(b64encode(dumps(connection).encode()).decode())
+        ub_connection=quote_plus(b64encode(dumps(connection).encode()).decode())
         
         active_from=connection['activeFrom']
         parent=""
@@ -682,12 +682,13 @@ def qiy_nodes_connections(node_name):
         state=connection['state']
         connection_url=connection['links']['self']
         ub_connection_url=quote_plus(b64encode(connection_url.encode()).decode())
-        row='<tr><td>{0}</td><td><a href="/qiy_nodes/{1}/connection/{2}">{3}</a></td><td><a href="/qiy_nodes/{1}/pid/{4}">{5}</a></td><td>{6}</td><td><a href="/qiy_nodes/{1}/connection/{7}">{8}</a></td></tr>'.format(
+        row='<tr><td>{0}</td><td><a href="/qiy_nodes/{1}/connection/{2}">{3}</a></td><td><a href="/qiy_nodes/{1}/pid/{4}/{5}">{6}</a></td><td>{7}</td><td><a href="/qiy_nodes/{1}/connection/{8}">{9}</a></td></tr>'.format(
             active_from,
             node_name,
             ub_connection_url,
             connection_url,
             ub_pid,
+            ub_connection,
             pid,
             state,
             ub_parent,
@@ -940,11 +941,12 @@ def qiy_nodes_feeds(node_name):
 
 """.format(node_name)
 
+
 @app.route('/qiy_nodes/<node_name>/feeds/list')
 def qiy_nodes_feeds_list(node_name):
     info("{}".format(node_name))
 
-    feed_ids=qiy_nodes_feed_ids_json(node_name)
+    feed_ids=node_feed_ids(node_name)
 
     lis=""
     for feed_id in feed_ids:
@@ -967,6 +969,7 @@ def qiy_nodes_feeds_list(node_name):
 """.format(node_name,lis)
     
     return page
+
 
 @app.route('/qiy_nodes/<node_name>/feeds/list/raw')
 def qiy_nodes_feeds_list_raw(node_name):
@@ -1071,6 +1074,36 @@ def qiy_nodes_messages(node_name,minutes):
 
 """.format(node_name,dumps(messages,indent=2))
 
+@app.route('/qiy_nodes/<node_name>/pid/<ub_pid>/<ub_connection>')
+def qiy_nodes_pid(node_name,ub_pid,ub_connection):
+    info("{} {} {}".format(node_name,ub_pid,ub_connection))
+
+    connection_s=b64decode(unquote(ub_connection)).decode()
+    connection=loads(connection_s)
+    pid=b64decode(unquote(ub_pid)).decode()
+
+    h={'pid':pid,'connection':connection}
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>pid</h2>
+
+{1}
+<p>
+
+<pre>
+{2}
+</pre>
+<a href="/qiy_nodes/{0}/pids">Up</a>
+
+""".format(
+    node_name,
+    pid,
+    dumps(h,indent=2)
+    )
+
+
 def qiy_nodes_pids_json(node_name):
     info("qiy_nodes_pids({})".format(node_name))
 
@@ -1083,36 +1116,54 @@ def qiy_nodes_pids_json(node_name):
     sorted_pids = OrderedDict(sorted(pids.items(), key=lambda t: t[0],reverse=True))
     return sorted_pids
 
-def qiy_nodes_feed_ids_json(node_name):
-    feed_ids=node_feed_ids(node_name)
-    return feed_ids
-
 @app.route('/qiy_nodes/<node_name>/pids')
 def qiy_nodes_pids(node_name):
-    info("qiy_nodes_pids({})".format(node_name))
+    info("{}".format(node_name))
 
-    pids=qiy_nodes_pids_json(node_name)
+    connections=qiy_nodes_pids_json(node_name)
 
-    for pid_id in pids:
-        pid_json=pids[pid_id]
-        references_url=pid_json['links']['references']
-        b_references_url=b64encode(references_url.encode()).decode()
-        ub_references_url=quote_plus(b_references_url)
-        href="/qiy_nodes/{}/pids/references/{}".format(node_name,ub_references_url)
-        link="<a href='{}'>{}</a>".format(href,references_url)
-        #print("qiy_nodes_pids: link: '{}'",format(link))
-        pid_json['links']['references']=link
+    rows=""
+
+    for i in connections:
+        connection=connections[i]
+        ub_connection=quote_plus(b64encode(dumps(connection).encode()).decode())
+        
+        active_from=connection['activeFrom']
+        parent=""
+        if 'parent' in connection['links']:
+            parent=connection['links']['parent']
+        ub_parent=quote_plus(b64encode(parent.encode()).decode())
+        pid=connection['pid']
+        ub_pid=quote_plus(b64encode(pid.encode()).decode())
+        state=connection['state']
+        connection_url=connection['links']['self']
+        ub_connection_url=quote_plus(b64encode(connection_url.encode()).decode())
+        row='<tr><td>{0}</td><td><a href="/qiy_nodes/{1}/connection/{2}">{3}</a></td><td><a href="/qiy_nodes/{1}/pid/{4}/{5}">{6}</a></td><td>{7}</td><td><a href="/qiy_nodes/{1}/connection/{8}">{9}</a></td></tr>'.format(
+            active_from,
+            node_name,
+            ub_connection_url,
+            connection_url,
+            ub_pid,
+            ub_connection,
+            pid,
+            state,
+            ub_parent,
+            parent
+            )
+        rows="{}\n{}".format(rows,row)
 
     return """
-<h1>Test Node {0}  Pids</h1>
+<h1>Test Node {0}</h1>
 
-<pre>
+<h2>pids</h2>
+
+<table>
 {1}
-</pre>
+</table>
 
 <a href="/qiy_nodes/{0}">Up</a>
 
-""".format(node_name,dumps(pids,indent=2))
+""".format(node_name,rows)
 
 
 #@app.route('/qiy_nodes/<path:node_name>/pids/<ub_pid>/references/<ub_references_url>')
