@@ -390,6 +390,7 @@ def qiy_nodes(node_name):
 <li><a href="/qiy_nodes/{0}/connect_tokens">Connect tokens</a>
 <li><a href="/qiy_nodes/{0}/consume_connect_token">Consume Connect token</a>
 <li><a href="/qiy_nodes/{0}/connections">Connections</a>
+<li><a href="/qiy_nodes/{0}/event_callback_addresses">Event callback addresses</a>
 <li><a href="/qiy_nodes/{0}/events">Events</a>
 <li><a href="/qiy_nodes/{0}/feeds">Feeds</a>
 <li><a href="/qiy_nodes/{0}/messages/since/60">Messages since 1h</a> (<a href="/qiy_nodes/{0}/messages/since/1440">1 day</a>)
@@ -659,6 +660,28 @@ headers: {3}
 
 """.format(node_name,connect_token_s,r.status_code,r.headers)
     return page
+
+@app.route('/qiy_nodes/<node_name>/event_callback_addresses')
+def qiy_nodes_event_callback_addresses(node_name):
+    info("{}".format(node_name))
+
+    headers={'Accept':'application/json'}
+    urls=dumps(node_request(
+        endpoint_name="eventCallbacks",
+        headers=headers,
+        node_name=node_name,
+        target=target
+        ).json(),indent=2)
+    
+    return """
+<h1>Test Node {0}</h1>
+<h2>Event Callback Endpoint addresses</h2>
+<pre>
+{1}
+</pre>
+<a href="/">Home</a>
+
+""".format(node_name,urls)
 
 @app.route('/qiy_nodes/<node_name>/events')
 def qiy_nodes_events(node_name):
