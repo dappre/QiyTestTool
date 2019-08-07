@@ -350,6 +350,21 @@ def node_feed_ids(node_name):
                    target=target)
     return r.json()
 
+def node_feed(node_name,feed_id,
+              headers={'Accept': 'application/json', 'Content-Type': 'application/json'}
+              ):
+    body={feed_id: {'input': ''}}
+    data=dumps(body)
+    print(data)
+    r=node_request(
+        data=data,
+        endpoint_name="feeds",
+        headers=headers,
+        node_name=node_name,
+        operation="post",
+        target=target)
+    return r.text
+
 # </Candidate function(s) for QiyNodeLib>
 
 
@@ -684,6 +699,15 @@ def qiy_nodes_events_source(node_name):
     return Response(
         gen(node_name),
         mimetype="text/event-stream")
+
+
+@app.route('/qiy_nodes/<node_name>/feed/<feed_id>')
+def qiy_nodes_feed(node_name,feed_id):
+    info("{}, {}".format(node_name,feed_id))
+
+    text=node_feed(node_name,feed_id)
+
+    return text
 
 
 @app.route('/qiy_nodes/<node_name>/feeds')
