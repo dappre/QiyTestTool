@@ -61,9 +61,7 @@ log_level=DEBUG
 
 basicConfig(filename="QiyTestTool.log",
             level=log_level,
-            format='%(asctime)s %(message)s',
-            datefmt='%Y/%m/%d %H:%M:%S'
-#            format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p'
+            format='%(asctime)s %(funcName)s %(levelname)s: %(message)s',
             )
 
 if not 'TARGET' in environ:
@@ -339,6 +337,21 @@ freek.driesenaar@digital-me.nl
 </ul>
 
 """.format(lis)
+
+#
+# <Candidate function(s) for QiyNodeLib>
+#
+
+def node_feed_ids(node_name):
+    headers={'Accept': 'application/json'}
+    r=node_request(endpoint_name="feeds",
+                   headers=headers,
+                   node_name=node_name,
+                   target=target)
+    return r.json()
+
+# </Candidate function(s) for QiyNodeLib>
+
 
 @app.route('/qiy_nodes/<node_name>')
 def qiy_nodes(node_name):
@@ -680,12 +693,49 @@ def qiy_nodes_feeds(node_name):
 <h1>Test Node {0}</h1>
 <h2>Feeds</h2>
 <ul>
+<li><a href="/qiy_nodes/{0}/feeds/list">List feed id's.</a> (<a href="/qiy_nodes/{0}/feeds/list/raw">raw</a>)
 <li><a href="/qiy_nodes/{0}/feeds/request">Request for feed.</a>
 </ul>
 
 <a href="/">Home</a>
 
 """.format(node_name)
+
+@app.route('/qiy_nodes/<node_name>/feeds/list')
+def qiy_nodes_feeds_list(node_name):
+    info("{}".format(node_name))
+
+    feed_ids=qiy_nodes_feed_ids_json(node_name)
+
+    lis=""
+    for feed_id in feed_ids:
+        li='<li><a href="/qiy_nodes/{0}/feed/{1}">{1}</a>\n'.format(
+            node_name,
+            feed_id
+            )
+        lis=lis+li
+
+    page="""
+<h1>Test Node {0}</h1>
+<h2>Feeds - list</h2>
+
+<ul>
+{1}
+</ul>
+
+<a href="/qiy_nodes/{0}/feeds">Up</a>
+
+""".format(node_name,lis)
+    
+    return page
+
+@app.route('/qiy_nodes/<node_name>/feeds/list/raw')
+def qiy_nodes_feeds_list_raw(node_name):
+    info("{}".format(node_name))
+
+    ids=node_feed_ids(node_name)
+    
+    return dumps(ids,indent=2)
 
 @app.route('/qiy_nodes/<node_name>/feeds/request')
 def qiy_nodes_feeds_request(node_name):
@@ -794,6 +844,10 @@ def qiy_nodes_pids_json(node_name):
             pids[connection['activeFrom']+" "+connection['pid']]=connection
     sorted_pids = OrderedDict(sorted(pids.items(), key=lambda t: t[0],reverse=True))
     return sorted_pids
+
+def qiy_nodes_feed_ids_json(node_name):
+    feed_ids=node_feed_ids(node_name)
+    return feed_ids
 
 @app.route('/qiy_nodes/<node_name>/pids')
 def qiy_nodes_pids(node_name):
