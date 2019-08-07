@@ -350,16 +350,12 @@ def node_connection_feed_ids(node_name,
                    node_name=node_name,
                    target=target)
 
-    pretty_print(r)
-
     connection_feeds_url=r.json()['links']['feeds']
     
     r=node_request(url=connection_feeds_url,
                    headers=headers,
                    node_name=node_name,
                    target=target)
-    
-    pretty_print(r)
 
     return r.json()
 
@@ -635,6 +631,31 @@ connection_url: {1}
            connection_url,
            lis,
            dumps(feed_ids,indent=2),
+           quote_plus(ub_connection_url),
+           )
+
+
+@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feeds/request')
+def qiy_nodes_connection_feeds_request(node_name,ub_connection_url):
+    info("{} {}".format(node_name,ub_connection_url))
+
+    connection_url=b64decode(unquote(ub_connection_url)).decode()
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connection feeds request</h2>
+connection_url: {1}
+
+<p>
+tbd
+</p>
+
+
+<a href="/qiy_nodes/{0}/connection/{2}/feeds">Up</a>
+
+""".format(node_name,
+           connection_url,
            quote_plus(ub_connection_url),
            )
 
@@ -1008,7 +1029,6 @@ def qiy_nodes_feeds_request_mbox(node_name,b64_mbox_url,
             target=target,
             url=mbox_url
             )
-    pretty_print(r)
 
 
     page="""
@@ -1153,7 +1173,7 @@ def qiy_nodes_pids_references_feeds(node_name,ub_references_url,feed_id):
                    target=target,
                    url=references_url
                    )
-    #pretty_print(r)
+
     if r.status_code==200:
         result=dumps(r.json(),indent=2)
         b64value_refs_by_operation_type_url=r.json()
