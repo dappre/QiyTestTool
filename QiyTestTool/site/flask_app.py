@@ -25,6 +25,7 @@ from os.path import expanduser
 from os.path import join
 #from pyqrcode import create
 from queue import Queue
+from queue import Empty
 from QiyNodeLib.QiyNodeLib import node_connect
 from QiyNodeLib.QiyNodeLib import node_connect_token__create
 from QiyNodeLib.QiyNodeLib import node_get_messages
@@ -183,7 +184,7 @@ def node_events_listener(event=None,
                          queue=None,
                          target=None
                          ):
-    print("node_events_listener({0},target={1})".format(node_name,target))
+    info("{0} {1}".format(node_name,target))
     headers={"Accept": "text/event-stream"}
     with node_request(endpoint_name="events",
                       headers=headers,
@@ -930,7 +931,10 @@ def qiy_nodes_events_source(node_name):
             info("Events listener started.")
 
             for i in range(50):
-                event=queue.get(timeout=100)
+                try:
+                    event=queue.get(timeout=100)
+                except Empty:
+                    info("Ignored Empty exception")
                 sse=ServerSentEvent(event,None)
                 yield sse.encode()
 
