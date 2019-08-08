@@ -13,6 +13,11 @@ This python module requires:
 ## Unix
 
 1. Clone this repository, say in your home directory.
+2. Install the dependencies by enter the following command:
+```
+cd ~/QiyTestTool
+python3 -m pip install -r requirements.txt
+```
 
 
 # Qiy Node Credentials
