@@ -96,7 +96,8 @@ class NoDataReceivedException(Exception):
 class ServerSentEvent(object):
     """Class to handle server-sent events."""
     def __init__(self, data, event):
-        self.data = data
+        now=datetime.now().isoformat()
+        self.data = "{} {}".format(now,data)
         self.event = event
         self.event_id = generate_id()
         self.desc_map = {
