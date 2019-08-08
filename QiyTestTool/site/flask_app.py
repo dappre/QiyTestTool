@@ -921,30 +921,31 @@ eventEventSource.onmessage = function(m) {{
 
 @app.route('/qiy_nodes/<node_name>/events/source')
 def qiy_nodes_events_source(node_name):
-    info("qiy_nodes_events_source('{0}')".format(node_name))
+    info("{0}".format(node_name))
 
     def gen(node_name) -> Iterator[str]:
-            info("Starting events listener...")
+            listener_id=generate_id()
+            info("{}: Starting events listener...".format(listener_id))
             stop_listening=Event()
             queue=Queue()
             listen_to_node(queue,stop_listening,node_name=node_name)
-            info("Events listener started.")
+            info("{}: Events listener started.".format(listener_id))
 
-            for i in range(50):
+            while True:
                 try:
                     event=queue.get(timeout=100)
                 except Empty:
-                    info("Ignored Empty exception")
+                    info("{}: Ignored Empty exception".format(listener_id))
                 except ValueError:
-                    info("Ignored ValueError exception")
+                    info("{}: Ignored ValueError exception".format(listener_id))
+                info("{}: event: '{}'".format(listener_id,event))
                 sse=ServerSentEvent(event,None)
                 yield sse.encode()
 
-            info("Stopping events listener...")
+            info("{}: Stopping events listener...".format(listener_id))
             stop_listening.set()
-            info("Events listener stopped")
+            info("{}: Events listener stopped".format(listener_id))
 
-    info("next_state_event_source(): Finish")
     return Response(
         gen(node_name),
         mimetype="text/event-stream")
