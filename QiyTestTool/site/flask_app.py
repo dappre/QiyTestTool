@@ -935,6 +935,8 @@ def qiy_nodes_events_source(node_name):
                     event=queue.get(timeout=100)
                 except Empty:
                     info("Ignored Empty exception")
+                except ValueError:
+                    info("Ignored ValueError exception")
                 sse=ServerSentEvent(event,None)
                 yield sse.encode()
 
