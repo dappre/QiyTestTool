@@ -314,23 +314,9 @@ def message_poller(connection_url=None,node_name=None,target=None) -> Iterator[s
 def root():
     info("root()")
 
-    creds_path=expanduser(getenv("QIY_CREDENTIALS"))
-    xpr="*_{}_node_repository.json".format(target[:2])
-    print(xpr)
-    l=glob(join(creds_path,xpr))
-    print(l)
-
-    rex="{}/(.*?)_{}_node_repository.json".format(creds_path,target[:2])
-    rex=rex.replace("\\","/")
-    print(rex)
-    
-    node_ids=[]
-    for i in l:
-        i=i.replace("\\","/")
-        node_id=findall(rex,i)[0]
-        node_ids.append(node_id)
+    ids=node_ids()
     lis=""
-    for i in node_ids:
+    for i in ids:
         lis=lis+'<li><a href="qiy_nodes/{0}">{0}</a>'.format(i)
     
     return """
@@ -397,6 +383,21 @@ def node_service_catalogue(node_name):
                    target=target)
     return r.json()
 
+def node_ids():
+    creds_path=expanduser(getenv("QIY_CREDENTIALS"))
+    xpr="*_{}_node_repository.json".format(target[:2])
+    l=glob(join(creds_path,xpr))
+
+    rex="{}/(.*?)_{}_node_repository.json".format(creds_path,target[:2])
+    rex=rex.replace("\\","/")
+    
+    node_ids=[]
+    for i in l:
+        i=i.replace("\\","/")
+        node_id=findall(rex,i)[0]
+        node_ids.append(node_id)
+    return node_ids
+
 # </Candidate function(s) for QiyNodeLib>
 
 
@@ -411,6 +412,7 @@ def qiy_nodes(node_name):
 
 <ul>
 <li><a href="/qiy_nodes/{0}/action_messages">Action messages</a>
+<li><a href="/qiy_nodes/{0}/connect">Connect</a>
 <li><a href="/qiy_nodes/{0}/connect_tokens">Connect tokens</a>
 <li><a href="/qiy_nodes/{0}/consume_connect_token">Consume Connect token</a>
 <li><a href="/qiy_nodes/{0}/connections">Connections</a>
@@ -505,6 +507,23 @@ Response headers: {3}
 <a href="/qiy_nodes/{0}/action_messages">Up</a>
 
 """.format(node_name,relay_option,r.status_code,r.headers)
+
+
+@app.route('/qiy_nodes/<node_name>/connect')
+def qiy_nodes_connect(node_name):
+    info("{}".format(node_name))
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connect</h2>
+
+tbd
+<p>
+
+<a href="/qiy_nodes/{0}">Up</a>
+
+""".format(node_name)
 
 
 def qiy_nodes_connections_json(node_name):
