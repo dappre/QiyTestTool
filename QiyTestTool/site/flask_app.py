@@ -315,12 +315,19 @@ def root():
     info("root()")
 
     creds_path=expanduser(getenv("QIY_CREDENTIALS"))
-    l=glob(join(creds_path,"*.json"))
+    xpr="*_{}_node_repository.json".format(target[:2])
+    print(xpr)
+    l=glob(join(creds_path,xpr))
+    print(l)
 
+    rex="{}/(.*?)_{}_node_repository.json".format(creds_path,target[:2])
+    rex=rex.replace("\\","/")
+    print(rex)
+    
     node_ids=[]
     for i in l:
         i=i.replace("\\","/")
-        node_id=findall("data/(.*?)_de_node_repository.json",i)[0]
+        node_id=findall(rex,i)[0]
         node_ids.append(node_id)
     lis=""
     for i in node_ids:
@@ -1303,7 +1310,7 @@ def qiy_nodes_service_catalogue(node_name):
 <pre>
 {1}
 </pre>
-<a href="/qiy_nodes/{0}/">Up</a>
+<a href="/qiy_nodes/{0}">Up</a>
 
 """.format(node_name,dumps(service_catalogue,indent=2))
     
