@@ -321,7 +321,7 @@ def root():
     lis=""
     for i in ids:
         lis=lis+'<li><a href="qiy_nodes/{0}">{0}</a>'.format(i)
-    
+
     return """
 <h1>Qiy Test Tool</h1>
 freek.driesenaar@digital-me.nl
@@ -347,7 +347,7 @@ def node_connection_feed_ids(node_name,
                    target=target)
 
     connection_feeds_url=r.json()['links']['feeds']
-    
+
     r=node_request(url=connection_feeds_url,
                    headers=headers,
                    node_name=node_name,
@@ -393,7 +393,7 @@ def node_ids():
 
     rex="{}/(.*?)_{}_node_repository.json".format(creds_path,target[:2])
     rex=rex.replace("\\","/")
-    
+
     node_ids=[]
     for i in l:
         i=i.replace("\\","/")
@@ -571,8 +571,8 @@ def qiy_nodes_connection(node_name,ub_connection_url):
         quote_plus(ub_connection_url)
         )
     lis=li
-    
-    
+
+
     return """
 <h1>Test Node {0}</h1>
 
@@ -603,8 +603,8 @@ def qiy_nodes_connection_feeds(node_name,ub_connection_url):
 
     connection_url=b64decode(unquote(ub_connection_url)).decode()
 
-    
-    
+
+
     return """
 <h1>Test Node {0}</h1>
 
@@ -700,7 +700,7 @@ def qiy_nodes_connections(node_name):
     for i in connections:
         connection=connections[i]
         ub_connection=quote_plus(b64encode(dumps(connection).encode()).decode())
-        
+
         active_from=connection['activeFrom']
         parent=""
         if 'parent' in connection['links']:
@@ -885,7 +885,7 @@ def qiy_nodes_event_callback_addresses(node_name):
         node_name=node_name,
         target=target
         ).json(),indent=2)
-    
+
     return """
 <h1>Test Node {0}</h1>
 <h2>Event Callback Endpoint addresses</h2>
@@ -935,13 +935,13 @@ def qiy_nodes_events_source(node_name):
             while True:
                 try:
                     event=queue.get(timeout=100)
-                except Empty:
-                    info("{}: Ignored Empty exception".format(listener_id))
+                #except Empty:
+                    #info("{}: Ignored Empty exception".format(listener_id))
 #                except ChunkedEncodingError:
 #                    info("{}: Ignored ChunkedEncodingError exception".format(listener_id))
                 except:
-                    info("Unexpected error:", sys.exc_info()[0])
-                    raise
+                    info("{}: Catched exception: {}".format(listener_id,sys.exc_info()[0]))
+                    break
                 info("{}: event: '{}'".format(listener_id,event))
                 sse=ServerSentEvent(event,None)
                 yield sse.encode()
@@ -1005,7 +1005,7 @@ def qiy_nodes_feeds_list(node_name):
 <a href="/qiy_nodes/{0}/feeds">Up</a>
 
 """.format(node_name,lis)
-    
+
     return page
 
 
@@ -1014,7 +1014,7 @@ def qiy_nodes_feeds_list_raw(node_name):
     info("{}".format(node_name))
 
     ids=node_feed_ids(node_name)
-    
+
     return dumps(ids,indent=2)
 
 @app.route('/qiy_nodes/<node_name>/feeds/request')
@@ -1165,7 +1165,7 @@ def qiy_nodes_pids(node_name):
     for i in connections:
         connection=connections[i]
         ub_connection=quote_plus(b64encode(dumps(connection).encode()).decode())
-        
+
         active_from=connection['activeFrom']
         parent=""
         if 'parent' in connection['links']:
@@ -1344,7 +1344,7 @@ def qiy_nodes_service_catalogue(node_name):
 <a href="/qiy_nodes/{0}">Up</a>
 
 """.format(node_name,dumps(service_catalogue,indent=2))
-    
+
     return page
 
 
