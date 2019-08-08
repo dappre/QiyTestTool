@@ -937,8 +937,8 @@ def qiy_nodes_events_source(node_name):
                     event=queue.get(timeout=100)
                 except Empty:
                     info("{}: Ignored Empty exception".format(listener_id))
-                except ChunkedEncodingError:
-                    info("{}: Ignored ChunkedEncodingError exception".format(listener_id))
+#                except ChunkedEncodingError:
+#                    info("{}: Ignored ChunkedEncodingError exception".format(listener_id))
                 except:
                     info("Unexpected error:", sys.exc_info()[0])
                     raise
