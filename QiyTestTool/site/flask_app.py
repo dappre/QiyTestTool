@@ -49,7 +49,7 @@ import flask_sse
 import pymongo
 import random
 import string
-
+import sys
 
 log_levels={}
 log_levels['DEBUG']=DEBUG
@@ -939,6 +939,9 @@ def qiy_nodes_events_source(node_name):
                     info("{}: Ignored Empty exception".format(listener_id))
                 except ChunkedEncodingError:
                     info("{}: Ignored ChunkedEncodingError exception".format(listener_id))
+                except:
+                    info("Unexpected error:", sys.exc_info()[0])
+                    raise
                 info("{}: event: '{}'".format(listener_id,event))
                 sse=ServerSentEvent(event,None)
                 yield sse.encode()
