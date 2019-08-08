@@ -949,10 +949,17 @@ def qiy_nodes_events_source(node_name):
                             info("{}: QTT_URLLIB_FIXED=='TRUE': Reusing connection on Empty exception".format(listener_id))
                         else:
                             info("{}: QTT_URLLIB_FIXED!='TRUE': Using new connection on Empty exception".format(listener_id))
+                            info("{}: event: '{}'".format(listener_id,event))
+                            sse=ServerSentEvent(event,None)
+                            yield sse.encode()
                             break
                     else:
                         info("{}: QTT_URLLIB_FIXED not in environ: Using new connection on Empty exception".format(listener_id))
+                        info("{}: event: '{}'".format(listener_id,event))
+                        sse=ServerSentEvent(event,None)
+                        yield sse.encode()
                         break
+
                 info("{}: event: '{}'".format(listener_id,event))
                 sse=ServerSentEvent(event,None)
                 yield sse.encode()
