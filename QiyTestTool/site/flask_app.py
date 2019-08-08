@@ -215,6 +215,9 @@ def node_events_listener(event=None,
         # This exception is only raised when the URLLIB fix has not been applied, see README.
         # Server-sent events can still be received, but only when using a new session.
         info("Silenced ChunkedEncodingError")
+        if 'ping' in log or (len(findall('{',log))>0 and (len(findall('{',log))==len(findall('}',log)))):
+            queue.put(log,timeout=1)
+            log=""
 
 
 def node_events_listener__start(
