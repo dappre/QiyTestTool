@@ -33,6 +33,7 @@ from QiyNodeLib.QiyNodeLib import node_request
 from QiyNodeLib.QiyNodeLib import pretty_print
 from re import findall
 from re import fullmatch
+from requests.exceptions import ChunkedEncodingError
 from string import Template
 from threading import Thread
 from threading import Event
@@ -936,8 +937,8 @@ def qiy_nodes_events_source(node_name):
                     event=queue.get(timeout=100)
                 except Empty:
                     info("{}: Ignored Empty exception".format(listener_id))
-                except ValueError:
-                    info("{}: Ignored ValueError exception".format(listener_id))
+                except ChunkedEncodingError:
+                    info("{}: Ignored ChunkedEncodingError exception".format(listener_id))
                 info("{}: event: '{}'".format(listener_id,event))
                 sse=ServerSentEvent(event,None)
                 yield sse.encode()
