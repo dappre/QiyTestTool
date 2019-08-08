@@ -122,7 +122,7 @@ def event_generator() -> Iterator[str]:
         sse = ServerSentEvent(str(event), None)
         yield sse.encode()
 
-def event_listener(regexp=None) -> Iterator[str]:
+def __event_listener(regexp=None) -> Iterator[str]:
     str_regexp=""
     if regexp:
         str_regexp=regexp
@@ -139,25 +139,28 @@ def event_listener(regexp=None) -> Iterator[str]:
                       target=target
                       ) as r:
         log=""
-        for chunk in r.iter_content(chunk_size=1, decode_unicode=True):
-            if not chunk.isprintable():
-                chunk=" "
-            log=log+chunk
-            if 'ping' in log:
-                debug(".")
-                log=""
-            elif '}' in log:
-                info("event_listener: event: '%s'", log)
-                if regexp:
-                    debug("    regexp: '{0}'".format(regexp))
-                    extract=findall(regexp,log)
-                    debug("    extract: '{0}'".format(extract))
-                    if extract:
-                        info("event_listener: regexp '%s' extract '%s'", regexp, extract)
-                        yield extract
-                else:
-                    yield log
-                log=""
+        try:
+            for chunk in r.iter_content(chunk_size=1, decode_unicode=True):
+                if not chunk.isprintable():
+                    chunk=" "
+                log=log+chunk
+                if 'ping' in log:
+                    debug(".")
+                    log=""
+                elif '}' in log:
+                    info("event_listener: event: '%s'", log)
+                    if regexp:
+                        debug("    regexp: '{0}'".format(regexp))
+                        extract=findall(regexp,log)
+                        debug("    extract: '{0}'".format(extract))
+                        if extract:
+                            info("event_listener: regexp '%s' extract '%s'", regexp, extract)
+                            yield extract
+                    else:
+                        yield log
+                    log=""
+        except ChunkedEncodingError:
+            info("Catched ChunkedEncodingError")
 
 """
    Example output:
@@ -187,26 +190,31 @@ def node_events_listener(event=None,
                          ):
     info("{0} {1}".format(node_name,target))
     headers={"Accept": "text/event-stream"}
-    with node_request(endpoint_name="events",
-                      headers=headers,
-                      node_name=node_name,
-                      node_type=node_type,
-                      operation="get",
-                      stream=True,
-                      target=target
-                      ) as r:
-        log=""
-        for chunk in r.iter_content(chunk_size=1, decode_unicode=True):
-            if not chunk.isprintable():
-                chunk=" "
-            log=log+chunk
-            if 'ping' in log or (len(findall('{',log))>0 and (len(findall('{',log))==len(findall('}',log)))):
-                queue.put(log,timeout=1)
-                log=""
-            if event.is_set():
-                queue.put(None,timeout=1)
-                print("----------- BREAK ---------------")
-                break
+    try:
+        with node_request(endpoint_name="events",
+                          headers=headers,
+                          node_name=node_name,
+                          node_type=node_type,
+                          operation="get",
+                          stream=True,
+                          target=target
+                          ) as r:
+            log=""
+            for chunk in r.iter_content(chunk_size=1, decode_unicode=True):
+                if not chunk.isprintable():
+                    chunk=" "
+                log=log+chunk
+                if 'ping' in log or (len(findall('{',log))>0 and (len(findall('{',log))==len(findall('}',log)))):
+                    queue.put(log,timeout=1)
+                    log=""
+                if event.is_set():
+                    queue.put(None,timeout=1)
+                    print("----------- BREAK ---------------")
+                    break
+    except ChunkedEncodingError:
+        # This exception is only raised when the URLLIB fix has not been applied, see README.
+        # Server-sent events can still be received, but only when using a new session.
+        info("Silenced ChunkedEncodingError")
 
 
 def node_events_listener__start(
@@ -936,12 +944,15 @@ def qiy_nodes_events_source(node_name):
                 try:
                     event=queue.get(timeout=100)
                 except Empty:
-                    info("{}: Ignored Empty exception".format(listener_id))
-#                except ChunkedEncodingError:
-#                    info("{}: Ignored ChunkedEncodingError exception".format(listener_id))
-                except:
-                    info("Unexpected error:", sys.exc_info()[0])
-                    raise
+                    if 'QTT_URLLIB_FIXED' in environ:
+                        if getenv('QTT_URLLIB_FIXED')=='TRUE':
+                            info("{}: QTT_URLLIB_FIXED=='TRUE': Reusing connection on Empty exception".format(listener_id))
+                        else:
+                            info("{}: QTT_URLLIB_FIXED!='TRUE': Using new connection on Empty exception".format(listener_id))
+                            break
+                    else:
+                        info("{}: QTT_URLLIB_FIXED not in environ: Using new connection on Empty exception".format(listener_id))
+                        break
                 info("{}: event: '{}'".format(listener_id,event))
                 sse=ServerSentEvent(event,None)
                 yield sse.encode()

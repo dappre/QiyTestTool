@@ -42,14 +42,9 @@ python3 -m flask run
 
 Now start a webbrowser and open the webpage https://127.0.0.1/5000
 
-# ValueError: invalid literal for int() with base 16: b''
+# Server-Sent Events: fix for reusing sessions
 
-When listening to events, the server may raise the following exception:
-
-'''
-ValueError: invalid literal for int() with base 16: b''
-'''
-
-This can be (temporarily) repaired by applying this change:
-https://github.com/psf/requests/issues/4248#issuecomment-429188281
-
+When using the standard urllib package, QTT will not reuse a session with Server-Sent Events.
+This can be (temporarily) repaired as follows:
+1. Applying this change: https://github.com/psf/requests/issues/4248#issuecomment-429188281
+2. Set the environment variable 'QTT_URLLIB_FIXED' to 'TRUE'
