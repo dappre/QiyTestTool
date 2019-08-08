@@ -200,7 +200,7 @@ def node_events_listener(event=None,
             if not chunk.isprintable():
                 chunk=" "
             log=log+chunk
-            if 'ping' in log or '}' in log:
+            if 'ping' in log or (len(findall('{',log))>0 and (len(findall('{',log))==len(findall('}',log)))):
                 queue.put(log,timeout=1)
                 log=""
             if event.is_set():
