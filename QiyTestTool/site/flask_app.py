@@ -440,12 +440,38 @@ def node_data_providers(
 
     return data_providers
 
-def node_feed_ids(node_name):
+def node_feed_ids_list(
+    service_type_url=None,
+    target=None,
+    ):
+    node_names=node_ids(target=target)
+    feed_ids=[]
+    
+    for i in node_names:
+        feeds=node_feed_ids(
+            i,
+            service_type_url=service_type_url,
+            target=target,
+            )
+        for i in feeds:
+            feed_ids.append(i)
+
+    return feed_ids
+
+def node_feed_ids(node_name,
+                  service_type_url=None,
+                  target=None,
+                  ):
+    query_parameters=None
+    if not service_type_url is None:
+        query_parameters={'operation':ub_encode(service_type_url)}
     headers={'Accept': 'application/json'}
     r=node_request(endpoint_name="feeds",
                    headers=headers,
                    node_name=node_name,
-                   target=target)
+                   query_parameters=query_parameters,
+                   target=target,
+                   )
     return r.json()
 
 def node_feed(node_name,feed_id,
@@ -1704,13 +1730,18 @@ def qtt_service_types(ub_service_type):
     return """
 <h1>Service type {0}</h1>
 
+<ul>
+<li><a href="/service_types/{1}/feeds/list">Feeds</a>
+</ul>
+
 <h2>Data providers</h2>
 <ul>
-{1}
+{2}
 </ul>
-<a href="/">Up</a>
 
+<a href="/">Up</a>
 """.format(service_type,
+           ub_service_type,
            data_provider_lis,
            )
 
@@ -1733,6 +1764,38 @@ tbd
 
 """.format(service_type,
            data_provider,
+           ub_service_type,
+           )
+
+
+@app.route('/service_types/<ub_service_type>/feeds/list')
+def qtt_service_types_feeds_list(ub_service_type):
+    info("{}".format(ub_service_type))
+
+    service_type=ub_decode(ub_service_type)
+
+    feed_ids=node_feed_ids_list(
+        service_type_url=service_type,
+        target=target,
+        )
+
+    lis=""
+    for i in feed_ids:
+        li='<li><a href="/service_types/{0}/feeds/{1}">{2}</a>'.format(ub_service_type,ub_encode(i),i)
+        lis="{}{}\n".format(lis,li)
+
+    feed_ids_lis=lis
+    return """
+<h1>Service type {0}</h1>
+
+<h2>Feeds</h2>
+<ul>
+{1}
+</ul>
+<a href="/service_types/{2}">Up</a>
+
+""".format(service_type,
+           feed_ids_lis,
            ub_service_type,
            )
 
