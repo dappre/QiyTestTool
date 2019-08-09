@@ -349,6 +349,40 @@ freek.driesenaar@digital-me.nl
 # <Candidate function(s) for QiyNodeLib>
 #
 
+def node_connected_node_names(node_name):
+    connected_node_names=[]
+    
+    all_node_names=node_ids()
+
+    connections_by_node={}
+    node_names_by_pid={}
+    
+    for name in all_node_names:
+        connections=qiy_nodes_connections_json(name)
+
+        connected_connections_by_pid={}
+        for i in connections:
+            connection=connections[i]
+            if connection['state']=='connected':
+                pid=connection['pid']
+                connected_connections_by_pid[pid]=connection
+                if pid not in node_names_by_pid:
+                    node_names_by_pid[pid]=[name]
+                elif name not in node_names_by_pid[pid]:
+                    node_names_by_pid[pid].append(name)
+        connections_by_node[name]=connected_connections_by_pid
+
+    for pid in node_names_by_pid:
+        names=node_names_by_pid[pid]
+        if len(names)==2:
+            if node_name in names:
+                if names[0]==node_name:
+                    connected_node_names.append(names[1])
+                else:
+                    connected_node_names.append(names[0])
+
+    return connected_node_names
+
 def node_connection_feed_ids(node_name,
                              connection_url):
     headers={'Accept': 'application/json'}
@@ -426,7 +460,7 @@ def qiy_nodes(node_name):
 
 <ul>
 <li><a href="/qiy_nodes/{0}/action_messages">Action messages</a>
-<li><a href="/qiy_nodes/{0}/connect">Connect</a>
+<li><a href="/qiy_nodes/{0}/connected_nodes">Connected nodes</a>
 <li><a href="/qiy_nodes/{0}/connect_tokens">Connect tokens</a>
 <li><a href="/qiy_nodes/{0}/consume_connect_token">Consume Connect token</a>
 <li><a href="/qiy_nodes/{0}/connections">Connections</a>
@@ -523,21 +557,24 @@ Response headers: {3}
 """.format(node_name,relay_option,r.status_code,r.headers)
 
 
-@app.route('/qiy_nodes/<node_name>/connect')
-def qiy_nodes_connect(node_name):
+@app.route('/qiy_nodes/<node_name>/connected_nodes')
+def qiy_nodes_connected_nodes(node_name):
     info("{}".format(node_name))
+
+    ids=node_connected_node_names(node_name)
 
     return """
 <h1>Test Node {0}</h1>
 
-<h2>Connect</h2>
+<h2>Connected nodes</h2>
 
-tbd
-<p>
+<pre>
+{1}
+</pre>
 
 <a href="/qiy_nodes/{0}">Up</a>
 
-""".format(node_name)
+""".format(node_name,dumps(ids,indent=2))
 
 
 def qiy_nodes_connections_json(node_name):
