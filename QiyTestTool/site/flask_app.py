@@ -589,7 +589,7 @@ def qiy_nodes_connect_with_node(node_name):
 
     lis=""
     for i in not_connected:
-        li='<li><a href="/qiy_nodes/{0}/connect_with_node/{1}">{1}</a>'.format(node_name,i)
+        li='<li><a href="/qiy_nodes/{0}/connect_with_other_node/{1}">{1}</a>'.format(node_name,i)
         lis="{}\n{}".format(lis,li)
 
     return """
@@ -604,6 +604,26 @@ def qiy_nodes_connect_with_node(node_name):
 <a href="/qiy_nodes/{0}/connect">Up</a>
 
 """.format(node_name,lis)
+
+
+@app.route('/qiy_nodes/<node_name>/connect_with_other_node/<other_node_name>')
+def qiy_nodes_connect_with_other_node(node_name,other_node_name):
+    info("{} {}".format(node_name,other_node_name))
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connect with node {1}</h2>
+
+<h3>With new connect token</h3>
+<ul>
+<li><a href="/qiy_nodes/{0}/connect_with_other_node/{1}/with_new_connect_token/as_producer">as connect token producer</a>
+<li><a href="/qiy_nodes/{0}/connect_with_other_node/{1}/with_new_connect_token/as_consumer">as connect token consumer</a>
+</ul>
+
+<a href="/qiy_nodes/{0}/connect_with_node">Up</a>
+
+""".format(node_name,other_node_name)
 
 
 @app.route('/qiy_nodes/<node_name>/connected_nodes')
