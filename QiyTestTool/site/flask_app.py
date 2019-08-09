@@ -1924,6 +1924,31 @@ def qtt_service_types_relying_parties(ub_service_type,relying_party):
     )
 
 
+@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/orchestrators/<orchestrator>/connected')
+def qtt_service_types_relying_parties_orchestrators_connected(ub_service_type,relying_party,orchestrator):
+    info("{}".format(ub_service_type,relying_party,orchestrator))
+
+    service_type=ub_decode(ub_service_type)
+
+
+    return """
+<h1>Service type {0}</h1>
+
+<h2>Relying party {1}</h2>
+
+<h3>Connected orchestrator {2}</h3>
+tbd
+
+<p>
+<a href="/service_types/{3}">Up</a>
+
+""".format(service_type,
+           relying_party,
+           orchestrator,
+           ub_service_type,
+           )
+
+
 @app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/orchestrators/<orchestrator>/not_connected')
 def qtt_service_types_relying_parties_orchestrators_not_connected(ub_service_type,relying_party,orchestrator):
     info("{}".format(ub_service_type,relying_party,orchestrator))
