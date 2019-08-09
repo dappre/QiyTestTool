@@ -692,6 +692,48 @@ Node {0} has sent {1} a connect request with token:
            )
 
 
+@app.route('/qiy_nodes/<node_name>/connect_with_other_node/<other_node_name>/with_new_connect_token/as_producer')
+def qiy_nodes_connect_with_other_node_with_new_connect_token_as_producer(node_name,other_node_name):
+    info("{} {}".format(node_name,other_node_name))
+
+    connect_token=node_connect_token__create(
+        node_name=node_name,
+        target=target)
+
+    r=node_connect(connect_token=connect_token,
+                   node_name=other_node_name,
+                   target=target)
+
+    log=request_to_str(r)
+    
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connect with node {1}</h2>
+
+<h3>With new connect token as producer</h3>
+
+Node {1} has sent {0} a connect request with token:
+<p>
+<pre>
+{2}
+</pre>
+
+<h3>Request data</h3>
+
+<pre>
+{3}
+</pre>
+
+<a href="/qiy_nodes/{0}/connect_with_other_node/{1}">Up</a>
+""".format(node_name,
+           other_node_name,
+           dumps(connect_token,indent=2),
+           log
+           )
+
+
 @app.route('/qiy_nodes/<node_name>/connected_nodes')
 def qiy_nodes_connected_nodes(node_name):
     info("{}".format(node_name))
