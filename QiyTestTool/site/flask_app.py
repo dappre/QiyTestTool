@@ -333,7 +333,7 @@ def root():
     for i in service_types:
         service_type_lis=service_type_lis+'<li><a href="service_types/{0}">{1}</a>\n'.format(ub_encode(i),i)
         
-    ids=node_ids()
+    ids=node_ids(target=target)
     lis=""
     for i in ids:
         lis=lis+'<li><a href="qiy_nodes/{0}">{0}</a>'.format(i)
@@ -361,10 +361,10 @@ freek.driesenaar@digital-me.nl
 # <Candidate function(s) for QiyNodeLib>
 #
 
-def node_connected_node_names(node_name):
+def node_connected_node_names(node_name,target=None):
     connected_node_names=[]
     
-    all_node_names=node_ids()
+    all_node_names=node_ids(target=target)
 
     connections_by_node={}
     node_names_by_pid={}
@@ -425,6 +425,21 @@ def node_connection_feed_ids(node_name,
 
     return r.json()
 
+def node_data_providers(
+    service_type_url=None,
+    target=None,
+    ):
+    node_names=node_ids(target=target)
+    data_providers=[]
+    
+    for i in node_names:
+        service_catalogue=node_service_catalogue(i,target=target)
+        for url in service_catalogue:
+            if url == service_type_url:
+                data_providers.append(i)
+
+    return data_providers
+
 def node_feed_ids(node_name):
     headers={'Accept': 'application/json'}
     r=node_request(endpoint_name="feeds",
@@ -448,7 +463,10 @@ def node_feed(node_name,feed_id,
         target=target)
     return r.text
 
-def node_service_catalogue(node_name):
+def node_service_catalogue(
+    node_name,
+    target=None,
+    ):
     headers={'Accept': 'application/json'}
     r=node_request(endpoint_name="serviceCatalog",
                    headers=headers,
@@ -456,7 +474,7 @@ def node_service_catalogue(node_name):
                    target=target)
     return r.json()
 
-def node_ids():
+def node_ids(target=None):
     creds_path=expanduser(getenv("QIY_CREDENTIALS"))
     xpr="*_{}_node_repository.json".format(target[:2])
     l=glob(join(creds_path,xpr))
@@ -471,12 +489,12 @@ def node_ids():
         node_ids.append(node_id)
     return node_ids
 
-def node_service_types():
-    node_names=node_ids()
+def node_service_types(target=None):
+    node_names=node_ids(target=target)
     service_types=[]
     
     for i in node_names:
-        service_catalogue=node_service_catalogue(i)
+        service_catalogue=node_service_catalogue(i,target=target)
         for service_type_url in service_catalogue:
             if not service_type_url in service_types:
                 service_types.append(service_type_url)
@@ -649,9 +667,9 @@ def qiy_nodes_connect(node_name):
 def qiy_nodes_connect_with_node(node_name):
     info("{}".format(node_name))
 
-    l=node_ids()
+    l=node_ids(target=target)
     l.remove(node_name)
-    connected=node_connected_node_names(node_name)
+    connected=node_connected_node_names(node_name,target=target)
 
     not_connected=[]
     for i in l:
@@ -785,7 +803,7 @@ Node {1} has sent {0} a connect request with token:
 def qiy_nodes_connected_nodes(node_name):
     info("{}".format(node_name))
 
-    ids=node_connected_node_names(node_name)
+    ids=node_connected_node_names(node_name,target=target)
 
     return """
 <h1>Test Node {0}</h1>
@@ -1653,7 +1671,7 @@ click here to redirect: <a href="{1}">{1}</a>
 def qiy_nodes_service_catalogue(node_name):
     info("{}".format(node_name))
 
-    service_catalogue=node_service_catalogue(node_name)
+    service_catalogue=node_service_catalogue(node_name,target=target)
 
     page="""
 <h1>Test Node {0}</h1>
@@ -1674,14 +1692,49 @@ def qtt_service_types(ub_service_type):
 
     service_type=ub_decode(ub_service_type)
 
+    data_providers=node_data_providers(service_type_url=service_type,
+                                       target=target)
+
+    lis=""
+    for i in data_providers:
+        li='<li><a href="/service_types/{0}/data_providers/{1}">{1}</a>'.format(ub_service_type,i)
+        lis="{}{}\n".format(lis,li)
+
+    data_provider_lis=lis
     return """
 <h1>Service type {0}</h1>
 
-tbd
-
+<h2>Data providers</h2>
+<ul>
+{1}
+</ul>
 <a href="/">Up</a>
 
-""".format(service_type)
+""".format(service_type,
+           data_provider_lis,
+           )
+
+
+@app.route('/service_types/<ub_service_type>/data_providers/<data_provider>')
+def qtt_service_types_data_providers(ub_service_type,data_provider):
+    info("{}".format(ub_service_type,data_provider))
+
+    service_type=ub_decode(ub_service_type)
+
+    return """
+<h1>Service type {0}</h1>
+
+<h2>Data provider {1}</h2>
+
+tbd
+
+<p>
+<a href="/service_types/{2}">Up</a>
+
+""".format(service_type,
+           data_provider,
+           ub_service_type,
+           )
 
 
 @app.route('/connection_url_event_source/<path:webhook_url>')
