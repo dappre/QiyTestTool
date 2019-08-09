@@ -489,6 +489,20 @@ def node_feed(node_name,feed_id,
         target=target)
     return r.text
 
+def node_orchestrators(
+        service_type_url=None,
+        target=None
+        ):
+    orchestrators=[]
+
+    data_providers=node_data_providers(service_type_url=service_type_url,
+                                       target=target)
+    for i in data_providers:
+        for name in node_connected_node_names(i,target=target):
+            if not name in orchestrators:
+                orchestrators.append(name)
+    return orchestrators
+
 def node_service_catalogue(
     node_name,
     target=None,
@@ -1726,12 +1740,11 @@ def qtt_service_types(ub_service_type):
         lis="{}{}\n".format(lis,li)
     data_provider_lis=lis
     
-    orchestrators=[]
+    orchestrators=node_orchestrators(
+        service_type_url=service_type,
+        target=target)
+       
     lis=""
-    for i in data_providers:
-        for name in node_connected_node_names(i,target=target):
-            if not name in orchestrators:
-                orchestrators.append(name)
     for i in orchestrators:
         li='<li><a href="/service_types/{0}/orchestrators/{1}">{1}</a>'.format(ub_service_type,i)
         lis="{}{}\n".format(lis,li)
@@ -1860,18 +1873,78 @@ def qtt_service_types_relying_parties(ub_service_type,relying_party):
 
     service_type=ub_decode(ub_service_type)
 
+    connected_nodes =node_connected_node_names(node_name=relying_party,target=target)
+    orchestrators   =node_orchestrators(service_type_url=service_type,target=target)
+
+    connected_orchestrators=[]
+    not_connected_orchestrators=[]
+    for i in orchestrators:
+        if i in connected_nodes:
+            connected_orchestrators.append(i)
+        else:
+            not_connected_orchestrators.append(i)
+
+    lis=""
+    for i in not_connected_orchestrators:
+        li='<li><a href="/service_types/{0}/relying_parties/{1}/orchestrators/{2}/not_connected">{2}</a>'.format(ub_service_type,relying_party,i)
+        lis="{}{}\n".format(lis,li)
+    not_connected_orchestrator_lis=lis
+    
+    lis=""
+    for i in connected_orchestrators:
+        li='<li><a href="/service_types/{0}/relying_parties/{1}/orchestrators/{2}/connected">{2}</a>'.format(ub_service_type,relying_party,i)
+        lis="{}{}\n".format(lis,li)
+    connected_orchestrator_lis=lis
+
     return """
 <h1>Service type {0}</h1>
 
 <h2>Relying party {1}</h2>
 
+<h3>Not connected orchestrators</h3>
+<ul>
+{2}
+</ul>
+
+<h3>Connected orchestrators</h3>
+<ul>
+{3}
+</ul>
+
+
+<p>
+<a href="/service_types/{4}">Up</a>
+
+""".format(
+    service_type,
+    relying_party,
+    not_connected_orchestrator_lis,
+    connected_orchestrator_lis,
+    ub_service_type,
+    )
+
+
+@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/orchestrators/<orchestrator>/not_connected')
+def qtt_service_types_relying_parties_orchestrators_not_connected(ub_service_type,relying_party,orchestrator):
+    info("{}".format(ub_service_type,relying_party,orchestrator))
+
+    service_type=ub_decode(ub_service_type)
+
+
+    return """
+<h1>Service type {0}</h1>
+
+<h2>Relying party {1}</h2>
+
+<h3>Not connected orchestrator {2}</h3>
 tbd
 
 <p>
-<a href="/service_types/{2}">Up</a>
+<a href="/service_types/{3}">Up</a>
 
 """.format(service_type,
            relying_party,
+           orchestrator,
            ub_service_type,
            )
 
