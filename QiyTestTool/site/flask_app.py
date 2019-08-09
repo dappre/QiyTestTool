@@ -626,6 +626,22 @@ def qiy_nodes_connect_with_other_node(node_name,other_node_name):
 """.format(node_name,other_node_name)
 
 
+@app.route('/qiy_nodes/<node_name>/connect_with_other_node/<other_node_name>/with_new_connect_token/as_consumer')
+def qiy_nodes_connect_with_other_node_with_new_connect_token_as_consumer(node_name,other_node_name):
+    info("{} {}".format(node_name,other_node_name))
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connect with node {1}</h2>
+
+<h3>With new connect token as consumer</h3>
+tbd
+<a href="/qiy_nodes/{0}/connect_with_other_node">Up</a>
+
+""".format(node_name,other_node_name)
+
+
 @app.route('/qiy_nodes/<node_name>/connected_nodes')
 def qiy_nodes_connected_nodes(node_name):
     info("{}".format(node_name))
