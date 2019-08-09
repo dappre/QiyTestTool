@@ -1735,8 +1735,17 @@ def qtt_service_types(ub_service_type):
     for i in orchestrators:
         li='<li><a href="/service_types/{0}/orchestrators/{1}">{1}</a>'.format(ub_service_type,i)
         lis="{}{}\n".format(lis,li)
-
     orchestrator_lis=lis
+    
+    relying_parties=[]
+    lis=""
+    for i in node_ids(target=target):
+        if not i in data_providers and not i in orchestrators:
+            relying_parties.append(i)
+    for i in relying_parties:
+        li='<li><a href="/service_types/{0}/relying_parties/{1}">{1}</a>'.format(ub_service_type,i)
+        lis="{}{}\n".format(lis,li)
+    relying_party_lis=lis
     
     return """
 <h1>Service type {0}</h1>
@@ -1755,11 +1764,17 @@ def qtt_service_types(ub_service_type):
 {3}
 </ul>
 
+<h2>Relying parties</h2>
+<ul>
+{4}
+</ul>
+
 <a href="/">Up</a>
 """.format(service_type,
            ub_service_type,
            data_provider_lis,
            orchestrator_lis,
+           relying_party_lis,
            )
 
 
@@ -1835,6 +1850,28 @@ tbd
 
 """.format(service_type,
            orchestrator,
+           ub_service_type,
+           )
+
+
+@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>')
+def qtt_service_types_relying_parties(ub_service_type,relying_party):
+    info("{}".format(ub_service_type,relying_party))
+
+    service_type=ub_decode(ub_service_type)
+
+    return """
+<h1>Service type {0}</h1>
+
+<h2>Relying party {1}</h2>
+
+tbd
+
+<p>
+<a href="/service_types/{2}">Up</a>
+
+""".format(service_type,
+           relying_party,
            ub_service_type,
            )
 
