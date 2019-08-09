@@ -446,6 +446,29 @@ def node_ids():
         node_ids.append(node_id)
     return node_ids
 
+def request_to_str(r):
+    s="\n"
+    s=s+"-------------------------------------------------------------------------------------------\n"
+    s=s+"Request:\n"
+    s=s+"{0} {1} HTTP/1.1\n".format(r.request.method,r.request.url)
+    s=s+"\n"
+    headers=r.request.headers
+    for header in headers:
+        s=s+"{0}: {1}\n".format(header,headers[header])
+    s=s+"\n"
+    s=s+str(r.request.body)
+    s=s+"\n\n"
+    s=s+"Response:\n"
+    s=s+str(r.status_code)+"\n"
+    headers=r.headers
+    for header in headers:
+        s=s+"{0}: {1}\n".format(header,headers[header])
+    s=s+"\n"
+    s=s+r.text
+    s=s+"\n-------------------------------------------------------------------------------------------\n"
+    
+    return s
+
 # </Candidate function(s) for QiyNodeLib>
 
 
@@ -580,6 +603,7 @@ def qiy_nodes_connect_with_node(node_name):
     info("{}".format(node_name))
 
     l=node_ids()
+    l.remove(node_name)
     connected=node_connected_node_names(node_name)
 
     not_connected=[]
@@ -630,16 +654,42 @@ def qiy_nodes_connect_with_other_node(node_name,other_node_name):
 def qiy_nodes_connect_with_other_node_with_new_connect_token_as_consumer(node_name,other_node_name):
     info("{} {}".format(node_name,other_node_name))
 
+    connect_token=node_connect_token__create(
+        node_name=other_node_name,
+        target=target)
+
+    r=node_connect(connect_token=connect_token,
+                   node_name=node_name,
+                   target=target)
+
+    log=request_to_str(r)
+    
+
     return """
 <h1>Test Node {0}</h1>
 
 <h2>Connect with node {1}</h2>
 
 <h3>With new connect token as consumer</h3>
-tbd
-<a href="/qiy_nodes/{0}/connect_with_other_node">Up</a>
 
-""".format(node_name,other_node_name)
+Node {0} has sent {1} a connect request with token:
+<p>
+<pre>
+{2}
+</pre>
+
+<h3>Request data</h3>
+
+<pre>
+{3}
+</pre>
+
+<a href="/qiy_nodes/{0}/connect_with_other_node/{1}">Up</a>
+""".format(node_name,
+           other_node_name,
+           dumps(connect_token,indent=2),
+           log
+           )
 
 
 @app.route('/qiy_nodes/<node_name>/connected_nodes')
@@ -839,7 +889,9 @@ def qiy_nodes_connections(node_name):
         if 'parent' in connection['links']:
             parent=connection['links']['parent']
         ub_parent=quote_plus(b64encode(parent.encode()).decode())
-        pid=connection['pid']
+        pid=""
+        if 'pid' in connection:
+            pid=connection['pid']
         ub_pid=quote_plus(b64encode(pid.encode()).decode())
         state=connection['state']
         connection_url=connection['links']['self']
