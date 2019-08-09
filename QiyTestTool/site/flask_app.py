@@ -558,6 +558,54 @@ Response headers: {3}
 """.format(node_name,relay_option,r.status_code,r.headers)
 
 
+@app.route('/qiy_nodes/<node_name>/connect')
+def qiy_nodes_connect(node_name):
+    info("{}".format(node_name))
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connect</h2>
+
+<ul>
+<li><a href="/qiy_nodes/{0}/connect_with_node">Connect with node</a>
+</ul>
+
+<a href="/qiy_nodes/{0}">Up</a>
+
+""".format(node_name)
+
+@app.route('/qiy_nodes/<node_name>/connect_with_node')
+def qiy_nodes_connect_with_node(node_name):
+    info("{}".format(node_name))
+
+    l=node_ids()
+    connected=node_connected_node_names(node_name)
+
+    not_connected=[]
+    for i in l:
+        if i not in connected:
+            not_connected.append(i)
+
+    lis=""
+    for i in not_connected:
+        li='<li><a href="/qiy_nodes/{0}/connect_with_node/{1}">{1}</a>'.format(node_name,i)
+        lis="{}\n{}".format(lis,li)
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connect with node</h2>
+
+<ul>
+{1}
+</ul>
+
+<a href="/qiy_nodes/{0}/connect">Up</a>
+
+""".format(node_name,lis)
+
+
 @app.route('/qiy_nodes/<node_name>/connected_nodes')
 def qiy_nodes_connected_nodes(node_name):
     info("{}".format(node_name))
@@ -576,24 +624,6 @@ def qiy_nodes_connected_nodes(node_name):
 <a href="/qiy_nodes/{0}">Up</a>
 
 """.format(node_name,dumps(ids,indent=2))
-
-
-@app.route('/qiy_nodes/<node_name>/connect')
-def qiy_nodes_connect(node_name):
-    info("{}".format(node_name))
-
-    return """
-<h1>Test Node {0}</h1>
-
-<h2>Connect</h2>
-
-<ul>
-<li>tbd
-</ul>
-
-<a href="/qiy_nodes/{0}">Up</a>
-
-""".format(node_name)
 
 
 def qiy_nodes_connections_json(node_name):
