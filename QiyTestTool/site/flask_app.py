@@ -383,6 +383,19 @@ def node_connected_node_names(node_name):
 
     return connected_node_names
 
+def node_connection_delete(
+    node_name=None,
+    connection_url=None,
+    target=None):
+    
+    r=node_request(url=connection_url,
+                   node_name=node_name,
+                   operation="delete",
+                   target=target,
+                   )
+
+    return r
+
 def node_connection_feed_ids(node_name,
                              connection_url):
     headers={'Accept': 'application/json'}
@@ -791,11 +804,17 @@ def qiy_nodes_connection(node_name,ub_connection_url):
         url=connection_url,
         ).json(),indent=2)
 
-    li='<li><a href="/qiy_nodes/{0}/connection/{1}/feeds">Connection feeds</a>'.format(
+    lis=""
+    li='<li><a href="/qiy_nodes/{0}/connection/{1}/delete">Delete</a>'.format(
         node_name,
         quote_plus(ub_connection_url)
         )
-    lis=li
+    lis="{}{}\n".format(lis,li)
+    li='<li><a href="/qiy_nodes/{0}/connection/{1}/feeds">Feeds</a>'.format(
+        node_name,
+        quote_plus(ub_connection_url)
+        )
+    lis="{}{}\n".format(lis,li)
     
     
     return """
@@ -819,6 +838,38 @@ connection_url: {1}
            connection_url,
            lis,
            connection
+           )
+
+
+@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/delete')
+def qiy_nodes_connection_delete(node_name,ub_connection_url):
+    info("{} {}".format(node_name,ub_connection_url))
+
+    connection_url=b64decode(unquote(ub_connection_url)).decode()
+
+    r=node_connection_delete(node_name=node_name,
+                             connection_url=connection_url,
+                             target=target)
+
+    log=request_to_str(r)
+    
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connection delete</h2>
+connection_url: {1}
+
+<h3>Request</h3>
+<pre>
+{2}
+</pre>
+
+<a href="/qiy_nodes/{0}/connection/{3}">Up</a>
+
+""".format(node_name,
+           connection_url,
+           log,
+           ub_connection_url,
            )
 
 
