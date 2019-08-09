@@ -328,6 +328,11 @@ def message_poller(connection_url=None,node_name=None,target=None) -> Iterator[s
 def root():
     info("root()")
 
+    service_types=node_service_types()
+    service_type_lis=""
+    for i in service_types:
+        service_type_lis=service_type_lis+'<li><a href="service_types/{0}">{1}</a>\n'.format(ub_encode(i),i)
+        
     ids=node_ids()
     lis=""
     for i in ids:
@@ -338,12 +343,19 @@ def root():
 freek.driesenaar@digital-me.nl
 8-2019
 
-<p>Test nodes:
+<h2>Service types</h2>
+
 <ul>
-{}
+{0}
 </ul>
 
-""".format(lis)
+<h2>Test nodes</h2>
+<ul>
+{1}
+</ul>
+
+""".format(service_type_lis,
+           lis)
 
 #
 # <Candidate function(s) for QiyNodeLib>
@@ -459,6 +471,18 @@ def node_ids():
         node_ids.append(node_id)
     return node_ids
 
+def node_service_types():
+    node_names=node_ids()
+    service_types=[]
+    
+    for i in node_names:
+        service_catalogue=node_service_catalogue(i)
+        for service_type_url in service_catalogue:
+            if not service_type_url in service_types:
+                service_types.append(service_type_url)
+
+    return service_types
+
 def request_to_str(r):
     s="\n"
     s=s+"-------------------------------------------------------------------------------------------\n"
@@ -481,6 +505,16 @@ def request_to_str(r):
     s=s+"\n-------------------------------------------------------------------------------------------\n"
     
     return s
+
+def ub_decode(ub):
+    bu=unquote(ub)
+    bu=b64decode(bu).decode()
+    return bu
+    
+def ub_encode(s):
+    ub=quote_plus(b64encode(s.encode()).decode())
+    return ub
+    
 
 # </Candidate function(s) for QiyNodeLib>
 
@@ -1633,6 +1667,21 @@ def qiy_nodes_service_catalogue(node_name):
 """.format(node_name,dumps(service_catalogue,indent=2))
     
     return page
+
+@app.route('/service_types/<ub_service_type>')
+def qtt_service_types(ub_service_type):
+    info("{}".format(ub_service_type))
+
+    service_type=ub_decode(ub_service_type)
+
+    return """
+<h1>Service type {0}</h1>
+
+tbd
+
+<a href="/">Up</a>
+
+""".format(service_type)
 
 
 @app.route('/connection_url_event_source/<path:webhook_url>')
