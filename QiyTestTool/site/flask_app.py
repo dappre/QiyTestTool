@@ -328,7 +328,7 @@ def message_poller(connection_url=None,node_name=None,target=None) -> Iterator[s
 def root():
     info("root()")
 
-    service_types=node_service_types()
+    service_types=node_service_types(target=target)
     service_type_lis=""
     for i in service_types:
         service_type_lis=service_type_lis+'<li><a href="service_types/{0}">{1}</a>\n'.format(ub_encode(i),i)
