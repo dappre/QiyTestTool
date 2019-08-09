@@ -26,6 +26,7 @@ from os.path import join
 #from pyqrcode import create
 from queue import Queue
 from queue import Empty
+from QiyNodeLib.QiyNodeLib import node_create
 from QiyNodeLib.QiyNodeLib import node_connect
 from QiyNodeLib.QiyNodeLib import node_connect_token__create
 from QiyNodeLib.QiyNodeLib import node_get_messages
@@ -332,13 +333,16 @@ def root():
     service_type_lis=""
     for i in service_types:
         service_type_lis=service_type_lis+'<li><a href="service_types/{0}">{1}</a>\n'.format(ub_encode(i),i)
-        
+       
     ids=node_ids(target=target)
     lis=""
     for i in ids:
         lis=lis+'<li><a href="qiy_nodes/{0}">{0}</a>'.format(i)
     
-    return """
+    return """<!DOCTYPE html>
+<html>
+<body>
+
 <h1>Qiy Test Tool</h1>
 freek.driesenaar@digital-me.nl
 8-2019
@@ -349,11 +353,25 @@ freek.driesenaar@digital-me.nl
 {0}
 </ul>
 
+<h3>Add service type</h3>
+
+<form action="/service_types_create" method="get">
+  Service type:<br>
+  <input type="text" name="service_type_url" value="https://service_type_url">
+  <br>
+  Data provider name:<br>
+  <input type="text" name="data_provider_name" value="dp">
+  <br><br>
+  <input type="submit" value="Submit">
+</form>
+
 <h2>Test nodes</h2>
 <ul>
 {1}
 </ul>
 
+</body>
+</html>
 """.format(service_type_lis,
            lis)
 
@@ -1363,7 +1381,7 @@ def qiy_nodes_feeds(node_name):
 def qiy_nodes_feeds_list(node_name):
     info("{}".format(node_name))
 
-    feed_ids=node_feed_ids(node_name)
+    feed_ids=node_feed_ids(node_name,target=target)
 
     lis=""
     for feed_id in feed_ids:
@@ -1972,6 +1990,66 @@ tbd
            orchestrator,
            ub_service_type,
            )
+
+
+@app.route('/service_types_create',methods=['get'])
+def qtt_service_types_create():
+    info("start")
+
+    service_type_url = request.args.get('service_type_url')
+    data_provider_name = request.args.get('data_provider_name')
+
+    report=""
+    if not data_provider_name in node_ids(target=target):
+        report="creating node..."
+        r=node_create(
+            node_id=data_provider_name,
+            node_name=data_provider_name,
+            target=target,
+            )
+        if r.status_code==201:
+            report="node created :-)"
+            # to be fixed
+            # Check and move files to QIY_CREDENTIALS
+            filenames=[]
+            filenames.append("{}_{}_node_repository.json".format(data_provider_name,target[:2]))
+            filenames.append("{}_{}.pem".format(data_provider_name,target[:2]))
+            
+            creds_path=expanduser(getenv("QIY_CREDENTIALS"))
+            xpr="{}_{}*".format(data_provider_name,target[:2])
+            print(xpr)
+            l=glob(join(creds_path,xpr))
+            print(l)
+            for filename in filenames:
+                if not filename in l:
+                    info("moving {} from ./data to {}".format(filename,creds_path))
+                    move("data/"+filename,creds_path)
+                else:
+                    info("filename {} ok".format(filename))
+                    pass
+        else:
+            report="node not created :-(, {}".format(request_to_str(r))
+            
+    else:
+        report="Not created; clashing node name '{}'".format(data_provider_name)
+    
+    
+    return """
+<h1>Service type</h1>
+
+data provider name: {}<br>
+service type: {}<br>
+<p>
+
+report:<br>
+{}
+
+<p><a href="/">Up</a>
+""".format(
+    data_provider_name,
+    service_type_url,
+    report,
+    )
 
 
 @app.route('/connection_url_event_source/<path:webhook_url>')
