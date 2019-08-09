@@ -460,6 +460,7 @@ def qiy_nodes(node_name):
 
 <ul>
 <li><a href="/qiy_nodes/{0}/action_messages">Action messages</a>
+<li><a href="/qiy_nodes/{0}/connect">Connect</a>
 <li><a href="/qiy_nodes/{0}/connected_nodes">Connected nodes</a>
 <li><a href="/qiy_nodes/{0}/connect_tokens">Connect tokens</a>
 <li><a href="/qiy_nodes/{0}/consume_connect_token">Consume Connect token</a>
@@ -575,6 +576,24 @@ def qiy_nodes_connected_nodes(node_name):
 <a href="/qiy_nodes/{0}">Up</a>
 
 """.format(node_name,dumps(ids,indent=2))
+
+
+@app.route('/qiy_nodes/<node_name>/connect')
+def qiy_nodes_connect(node_name):
+    info("{}".format(node_name))
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connect</h2>
+
+<ul>
+<li>tbd
+</ul>
+
+<a href="/qiy_nodes/{0}">Up</a>
+
+""".format(node_name)
 
 
 def qiy_nodes_connections_json(node_name):
