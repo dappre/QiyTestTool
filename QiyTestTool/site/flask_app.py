@@ -1767,6 +1767,7 @@ def qtt_service_types(ub_service_type):
 
     service_type=ub_decode(ub_service_type)
 
+    all_users=node_ids(target=target)
     data_providers=node_data_providers(service_type_url=service_type,
                                        target=target)
     lis=""
@@ -1787,13 +1788,26 @@ def qtt_service_types(ub_service_type):
     
     relying_parties=[]
     lis=""
-    for i in node_ids(target=target):
-        if not i in data_providers and not i in orchestrators:
-            relying_parties.append(i)
+    for i in orchestrators:
+        for connected_to_orchestrator in node_connected_node_names(i,target=target):
+            if not connected_to_orchestrator in data_providers and not connected_to_orchestrator in relying_parties:
+                relying_parties.append(connected_to_orchestrator)
     for i in relying_parties:
         li='<li><a href="/service_types/{0}/relying_parties/{1}">{1}</a>'.format(ub_service_type,i)
         lis="{}{}\n".format(lis,li)
     relying_party_lis=lis
+    
+    other_users=[]
+    players=relying_parties + orchestrators + data_providers
+    lis=""
+    for i in all_users:
+        if i not in players:
+            other_users.append(i)
+    for i in other_users:
+        li='<li><a href="/service_types/{0}/relying_parties/{1}">{1}</a>'.format(ub_service_type,i)
+        lis="{}{}\n".format(lis,li)
+    other_user_lis=lis
+    
     
     return """
 <h1>Service type {0}</h1>
@@ -1817,12 +1831,18 @@ def qtt_service_types(ub_service_type):
 {4}
 </ul>
 
+<h2>Other users</h2>
+<ul>
+{5}
+</ul>
+
 <a href="/">Up</a>
 """.format(service_type,
            ub_service_type,
            data_provider_lis,
            orchestrator_lis,
            relying_party_lis,
+           other_user_lis,
            )
 
 
