@@ -505,7 +505,7 @@ def node_feed(node_name,feed_id,
         node_name=node_name,
         operation="post",
         target=target)
-    return r.text
+    return r
 
 def node_orchestrators(
         service_type_url=None,
@@ -651,7 +651,7 @@ def qiy_nodes_action_messages(node_name):
     lis=""
     for amid in action_messages:
         action_message=action_messages[amid]
-        li='<li>{0}: {1}'.format(amid, dumps(action_message,indent=2))
+        li='<li>{0}: <pre>{1}</pre>'.format(amid, dumps(action_message,indent=2))
         rolis=""
         relay_options=action_message['relayOptions']
         for relay_option in relay_options:
@@ -684,24 +684,26 @@ def qiy_nodes_action_messages_relay_options_get(node_name,b64_relay_option):
     relay_option=b64decode(b64_relay_option.encode()).decode()
 
     r=node_request(node_name=node_name,
-#            operation="post",
-            operation="put",
+            operation="post",
+#            operation="put",
             target=target,
             url=relay_option
             )
-    pretty_print(r)
+    s=request_to_str(r)
 
     return """
 <h1>Test Node {0} - Action messages - Relay options - get</h1>
 
 Relay option: {1}
 <p>
-Response status_code: {2}<br>
-Response headers: {3}
-
+<pre>
+{2}
+</pre>
 <a href="/qiy_nodes/{0}/action_messages">Up</a>
 
-""".format(node_name,relay_option,r.status_code,r.headers)
+""".format(node_name,
+           relay_option,
+           s)
 
 
 @app.route('/qiy_nodes/<node_name>/connect')
@@ -1356,9 +1358,24 @@ def qiy_nodes_events_source(node_name):
 def qiy_nodes_feed(node_name,feed_id):
     info("{}, {}".format(node_name,feed_id))
 
-    text=node_feed(node_name,feed_id)
+    r=node_feed(node_name,feed_id)
+    s=request_to_str(r)
 
-    return text
+    return """
+<h1>Test Node {0}</h1>
+<h2>Feed {1}</h2>
+<ul>
+<pre>
+{2}
+</pre>
+
+<p>
+<a href="/qiy_nodes/{0}">Up</a>
+""".format(
+    node_name,
+    feed_id,
+    s,
+    )
 
 
 @app.route('/qiy_nodes/<node_name>/feeds')
@@ -1425,10 +1442,11 @@ def qiy_nodes_feeds_request(node_name):
         mbox_url=connections[connection]['links']['mbox']
         b64mbox_url=quote_plus(b64encode(mbox_url.encode()).decode())
         url="/qiy_nodes/{}/feeds/request/mbox/{}".format(node_name,b64mbox_url)
-        li='<li>pid {0}: <a href="{1}">{2}</a>\n'.format(connections[connection]['pid'],
-                                           url,
-                                           dumps(connections[connection],indent=2))
-        lis=lis+li
+        if 'pid' in connections[connection]:
+            li='<li>pid {0}: <a href="{1}">{2}</a>\n'.format(connections[connection]['pid'],
+                                               url,
+                                               dumps(connections[connection],indent=2))
+            lis=lis+li
 
     page="""
 <h1>Test Node {0}</h1>
@@ -1448,7 +1466,7 @@ def qiy_nodes_feeds_request(node_name):
 def qiy_nodes_feeds_request_mbox(node_name,b64_mbox_url,
                                  operationTypeUrl="https://github.com/qiyfoundation/fiKks/tree/master/schema/v1"
                                  ):
-    info("qiy_nodes_feeds_request_mbox({},{})".format(node_name,b64_mbox_url))
+    info("{}, {}".format(node_name,b64_mbox_url))
 
     mbox_url=b64decode(b64_mbox_url).decode()
 
@@ -1467,20 +1485,19 @@ def qiy_nodes_feeds_request_mbox(node_name,b64_mbox_url,
             target=target,
             url=mbox_url
             )
+    s=request_to_str(r)
 
 
     page="""
 <h1>Test Node {0} qiy_nodes_feeds_request_mbox</h1>
 
-mbox_url: {1}
-
-Response: {2}
-Headers: {3}
-
+<pre>
+{1}
+</pre>
 <p>
 <a href="/qiy_nodes/{0}/feeds/request">Up</a>
 
-""".format(node_name,mbox_url,r.status_code,r.headers)
+""".format(node_name,s)
     return page
 
 
