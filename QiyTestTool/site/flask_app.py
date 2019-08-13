@@ -887,12 +887,77 @@ def qiy_nodes_connect(node_name):
 <h2>Connect</h2>
 
 <ul>
+<li><a href="/qiy_nodes/{0}/connect_using_connect_token/home">Connect using connect token</a>
 <li><a href="/qiy_nodes/{0}/connect_with_node">Connect with node</a>
 </ul>
 
 <a href="/qiy_nodes/{0}">Up</a>
 
 """.format(node_name)
+
+@app.route('/qiy_nodes/<node_name>/connect_using_connect_token/connect_token')
+def qiy_nodes_connect_using_connect_token_connect_token(node_name):
+    info("{}".format(node_name))
+
+    connect_token = request.args.get('connect_token')
+    print(connect_token)
+    connect_token = loads(connect_token)
+
+    r=node_connect(
+        connect_token=connect_token,
+        node_name=node_name,
+        target=target,
+        )
+
+    html="<pre>\n{}\n</pre>".format(escape(request_to_str(r)))
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connect using connect token</h2>
+connect_token: {1}
+
+<p>
+{2}
+
+<p>
+<a href="/qiy_nodes/{0}/connect">Up</a>
+
+""".format(
+    node_name,
+    connect_token,
+    html,
+    )
+
+
+@app.route('/qiy_nodes/<node_name>/connect_using_connect_token/home')
+def qiy_nodes_connect_using_connect_token(node_name):
+    info("{}".format(node_name))
+
+    html="""
+<form action="/qiy_nodes/{}/connect_using_connect_token/connect_token" method="get">
+  Connect token:<br>
+  <input type="text" name="connect_token" value="">
+  <br>
+  <input type="submit" value="Submit">
+</form>
+""".format(node_name)
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connect using connect token</h2>
+
+{1}
+
+<p>
+<a href="/qiy_nodes/{0}/connect">Up</a>
+
+""".format(
+    node_name,
+    html,
+    )
+
 
 @app.route('/qiy_nodes/<node_name>/connect_with_node')
 def qiy_nodes_connect_with_node(node_name):
