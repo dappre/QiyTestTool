@@ -1052,7 +1052,7 @@ def qiy_nodes_connection_feed_access_unencrypted(node_name,ub_connection_url,fee
         feed_id=feed_id,
         target=target,
         )
-    s=request_to_str(r)
+    s=escape(request_to_str(r))
 
     return """
 <h1>Test Node {0}</h1>
