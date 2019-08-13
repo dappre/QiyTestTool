@@ -1381,8 +1381,8 @@ def qiy_nodes_events_source(node_name):
         mimetype="text/event-stream")
 
 
-@app.route('/qiy_nodes/<node_name>/feed/<feed_id>')
-def qiy_nodes_feed(node_name,feed_id):
+@app.route('/qiy_nodes/<node_name>/feed/<feed_id>/access/unencrypted')
+def qiy_nodes_feed_access_unencrypted(node_name,feed_id):
     info("{}, {}".format(node_name,feed_id))
 
     r=node_feed(node_name,feed_id)
@@ -1390,7 +1390,7 @@ def qiy_nodes_feed(node_name,feed_id):
 
     return """
 <h1>Test Node {0}</h1>
-<h2>Feed {1}</h2>
+<h2>Feed {1} access unencrypted</h2>
 <ul>
 <pre>
 {2}
@@ -1429,7 +1429,7 @@ def qiy_nodes_feeds_list(node_name):
 
     lis=""
     for feed_id in feed_ids:
-        li='<li><a href="/qiy_nodes/{0}/feed/{1}">{1}</a>\n'.format(
+        li='<li><a href="/qiy_nodes/{0}/feed/{1}/access/unencrypted">{1}</a>\n'.format(
             node_name,
             feed_id
             )
