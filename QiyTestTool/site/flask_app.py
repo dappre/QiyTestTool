@@ -1512,6 +1512,33 @@ def qiy_nodes_feed_access_unencrypted(node_name,feed_id):
     )
 
 
+@app.route('/qiy_nodes/<node_name>/feed/<feed_id>/home')
+def qiy_nodes_feed_home(node_name,feed_id):
+    info("{}, {}".format(node_name,feed_id))
+
+    body=""
+
+    lis=""
+    li='<li><a href="/qiy_nodes/{0}/feed/{1}/access/unencrypted">Access feed unencrypted</a>\n'.format(node_name,feed_id)
+    lis="{}{}\n".format(lis,li)
+
+    body="<ul>\n{}</ul>\n".format(lis)
+
+    return """
+<h1>Test Node {0}</h1>
+<h2>Feed {1} home</h2>
+
+{2}
+<p>
+<a href="/qiy_nodes/{0}">Up</a>
+""".format(
+    node_name,
+    feed_id,
+    body,
+    )
+
+
+
 @app.route('/qiy_nodes/<node_name>/feeds')
 def qiy_nodes_feeds(node_name):
     info("qiy_nodes_feeds({})".format(node_name))
@@ -1536,7 +1563,7 @@ def qiy_nodes_feeds_list(node_name):
 
     lis=""
     for feed_id in feed_ids:
-        li='<li><a href="/qiy_nodes/{0}/feed/{1}/access/unencrypted">{1}</a>\n'.format(
+        li='<li><a href="/qiy_nodes/{0}/feed/{1}/home">{1}</a>\n'.format(
             node_name,
             feed_id
             )
