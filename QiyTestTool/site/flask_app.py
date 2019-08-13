@@ -436,6 +436,47 @@ def node_connection_delete(
 
     return r
 
+def node_connection_feed_access_encrypted(
+    connection_url=None,
+    exponent=None,
+    feed_id=None,
+    modulus=None,
+    node_name=None,
+    target=None,
+              ):
+    
+    headers={'Accept': 'application/json'}
+    r=node_request(url=connection_url,
+                   headers=headers,
+                   node_name=node_name,
+                   target=target)
+
+    connection_feeds_url=r.json()['links']['feeds']
+
+    url="{}/{}".format(connection_feeds_url,
+                       feed_id)
+    body="""<?xml version="1.0" encoding="UTF-8"?>
+<ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+    <ds:KeyValue>
+        <ds:RSAKeyValue>
+            <ds:Modulus>{}</ds:Modulus>
+            <ds:Exponent>{}</ds:Exponent>
+        </ds:RSAKeyValue>
+    </ds:KeyValue>
+</ds:KeyInfo>""".format(modulus,exponent)
+    data=body
+    headers={'Content-Type':'application/xml', 'Accept': 'application/xml'}
+
+    r=node_request(
+        data=data,
+        headers=headers,
+        node_name=node_name,
+        operation="post",
+        target=target,
+        url=url,
+        )
+    return r
+
 def node_connection_feed_access_unencrypted(
     node_name=None,
     connection_url=None,
@@ -459,7 +500,6 @@ def node_connection_feed_access_unencrypted(
         operation="post",
         target=target)
     return r
-
 
 def node_connection_feed_ids(node_name,
                              connection_url):
@@ -1116,6 +1156,48 @@ connection_url: {1}
            )
 
 
+@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feed/<feed_id>/access/encrypted')
+def qiy_nodes_connection_feed_access_encrypted(node_name,ub_connection_url,feed_id):
+    info("{} {}".format(node_name,ub_connection_url,feed_id))
+
+    connection_url=b64decode(unquote(ub_connection_url)).decode()
+
+    exponent="AQAB"
+    modulus="6sNhgtNVksGD4ZK1rW2iiGO11O/BzEIZazovnMK37y3RVvvjmv1z44uA505gyyUTziCntHV9tONmJ11bH4koqqJQFZPXuKAyuu9eR3W/pZ4EGBMMIVH2aqSOsPMTI5K9l2YOW8fAoEZQtYVWsCrygOyctBiamJZRJ+AKFZCIY5E="
+
+    r=node_connection_feed_access_encrypted(
+        node_name=node_name,
+        modulus=modulus,
+        connection_url=connection_url,
+        exponent=exponent,
+        feed_id=feed_id,
+        target=target,
+        )
+    s=escape(request_to_str(r))
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connection feed access encrypted</h2>
+connection_url: {1}<br>
+feed_id: {2}
+
+<p>
+<pre>
+{3}
+</pre>
+
+<p>
+<a href="/qiy_nodes/{0}/connection/{4}/feed/{2}/home">Up</a>
+
+""".format(node_name,
+           connection_url,
+           feed_id,
+           s,
+           ub_connection_url,
+           )
+
+
 @app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feed/<feed_id>/access/unencrypted')
 def qiy_nodes_connection_feed_access_unencrypted(node_name,ub_connection_url,feed_id):
     info("{} {}".format(node_name,ub_connection_url,feed_id))
@@ -1159,6 +1241,8 @@ def qiy_nodes_connection_feed_home(node_name,ub_connection_url,feed_id):
     connection_url=b64decode(unquote(ub_connection_url)).decode()
 
     lis=""
+    li='<li><a href="/qiy_nodes/{0}/connection/{1}/feed/{2}/access/encrypted">Access feed encrypted</a>'.format(node_name,ub_connection_url,feed_id)
+    lis="{}{}\n".format(lis,li)
     li='<li><a href="/qiy_nodes/{0}/connection/{1}/feed/{2}/access/unencrypted">Access feed unencrypted</a>'.format(node_name,ub_connection_url,feed_id)
     lis="{}{}\n".format(lis,li)
 
