@@ -5,6 +5,7 @@ from collections import OrderedDict
 from datetime import datetime
 from flask import Flask, Response, request
 from glob import glob
+from html import escape
 from json import loads
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -435,6 +436,31 @@ def node_connection_delete(
 
     return r
 
+def node_connection_feed_access_unencrypted(
+    node_name=None,
+    connection_url=None,
+    feed_id=None,
+    target=None,
+              ):
+    headers={'Accept': 'application/json'}
+    r=node_request(url=connection_url,
+                   headers=headers,
+                   node_name=node_name,
+                   target=target)
+
+    connection_feeds_url=r.json()['links']['feeds']
+
+    url="{}/{}".format(connection_feeds_url,
+                       feed_id)
+    r=node_request(
+        url=url,
+        headers=headers,
+        node_name=node_name,
+        operation="post",
+        target=target)
+    return r
+
+
 def node_connection_feed_ids(node_name,
                              connection_url):
     headers={'Accept': 'application/json'}
@@ -505,8 +531,10 @@ def node_feed(node_name,feed_id,
               headers={'Accept': 'application/json', 'Content-Type': 'application/json'}
               ):
     body={feed_id: {'input': ''}}
+    body=None
     data=dumps(body)
-    print(data)
+    data=None
+#    print(data)
     r=node_request(
         data=data,
         endpoint_name="feeds",
@@ -1012,6 +1040,43 @@ connection_url: {1}
            )
 
 
+@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feed/<feed_id>/access/unencrypted')
+def qiy_nodes_connection_feed_access_unencrypted(node_name,ub_connection_url,feed_id):
+    info("{} {}".format(node_name,ub_connection_url,feed_id))
+
+    connection_url=b64decode(unquote(ub_connection_url)).decode()
+
+    r=node_connection_feed_access_unencrypted(
+        node_name=node_name,
+        connection_url=connection_url,
+        feed_id=feed_id,
+        target=target,
+        )
+    s=request_to_str(r)
+
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connection feed access unencrypted</h2>
+connection_url: {1}<br>
+feed_id: {2}
+
+<p>
+<pre>
+{3}
+</pre>
+
+<p>
+<a href="/qiy_nodes/{0}/connection/{4}/feeds">Up</a>
+
+""".format(node_name,
+           connection_url,
+           feed_id,
+           s,
+           ub_connection_url,
+           )
+
+
 @app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feeds')
 def qiy_nodes_connection_feeds(node_name,ub_connection_url):
     info("{} {}".format(node_name,ub_connection_url))
@@ -1049,9 +1114,10 @@ def qiy_nodes_connection_feeds_list(node_name,ub_connection_url):
 
     lis=""
     for feed_id in feed_ids:
-        li='<li><a href="/qiy_nodes/{0}/feed/{1}">{1}</a>\n'.format(
+        li='<li><a href="/qiy_nodes/{0}/connection/{1}/feed/{2}/access/unencrypted">{2}</a>\n'.format(
             node_name,
-            feed_id
+            ub_connection_url,
+            feed_id,
             )
         lis=lis+li
 
@@ -1388,20 +1454,28 @@ def qiy_nodes_feed_access_unencrypted(node_name,feed_id):
     r=node_feed(node_name,feed_id)
     s=request_to_str(r)
 
+    data=""
+    if r.status_code==200:
+        b64=r.json()[feed_id]['output']
+        data="<br><br>base64-decoded output<br><br>\n<pre>{}</pre>".format(escape(b64decode(b64).decode()))
+
     return """
 <h1>Test Node {0}</h1>
 <h2>Feed {1} access unencrypted</h2>
-<ul>
+
 <pre>
 {2}
 </pre>
 
+<p>
+{3}
 <p>
 <a href="/qiy_nodes/{0}">Up</a>
 """.format(
     node_name,
     feed_id,
     s,
+    data,
     )
 
 
