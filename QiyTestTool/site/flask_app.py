@@ -1580,7 +1580,7 @@ def qiy_nodes_feed_access_encrypted(node_name,feed_id):
 </pre>
 
 <p>
-<a href="/qiy_nodes/{0}">Up</a>
+<a href="/qiy_nodes/{0}/feed/{1}/home">Up</a>
 """.format(
     node_name,
     feed_id,
@@ -1604,7 +1604,7 @@ def qiy_nodes_feed_access_unencrypted(node_name,feed_id):
 </pre>
 
 <p>
-<a href="/qiy_nodes/{0}">Up</a>
+<a href="/qiy_nodes/{0}/feed/{1}/home">Up</a>
 """.format(
     node_name,
     feed_id,
