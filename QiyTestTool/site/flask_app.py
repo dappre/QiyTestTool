@@ -1143,12 +1143,45 @@ feed_id: {2}
 </pre>
 
 <p>
-<a href="/qiy_nodes/{0}/connection/{4}/feeds">Up</a>
-
+<a href="/qiy_nodes/{0}/connection/{4}/feed/{2}/home">Up</a>
 """.format(node_name,
            connection_url,
            feed_id,
            s,
+           ub_connection_url,
+           )
+
+
+@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feed/<feed_id>/home')
+def qiy_nodes_connection_feed_home(node_name,ub_connection_url,feed_id):
+    info("{} {}".format(node_name,ub_connection_url,feed_id))
+
+    connection_url=b64decode(unquote(ub_connection_url)).decode()
+
+    lis=""
+    li='<li><a href="/qiy_nodes/{0}/connection/{1}/feed/{2}/access/unencrypted">Access feed unencrypted</a>'.format(node_name,ub_connection_url,feed_id)
+    lis="{}{}\n".format(lis,li)
+
+    html="""<ul>
+{}
+</ul>""".format(lis)
+    
+    return """
+<h1>Test Node {0}</h1>
+
+<h2>Connection feed home</h2>
+connection_url: {1}<br>
+feed_id: {2}
+
+<p>
+{3}
+<p>
+<a href="/qiy_nodes/{0}/connection/{4}/feeds/list">Up</a>
+
+""".format(node_name,
+           connection_url,
+           feed_id,
+           html,
            ub_connection_url,
            )
 
@@ -1190,7 +1223,7 @@ def qiy_nodes_connection_feeds_list(node_name,ub_connection_url):
 
     lis=""
     for feed_id in feed_ids:
-        li='<li><a href="/qiy_nodes/{0}/connection/{1}/feed/{2}/access/unencrypted">{2}</a>\n'.format(
+        li='<li><a href="/qiy_nodes/{0}/connection/{1}/feed/{2}/home">{2}</a>\n'.format(
             node_name,
             ub_connection_url,
             feed_id,
