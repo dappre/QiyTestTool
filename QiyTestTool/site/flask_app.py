@@ -527,6 +527,43 @@ def node_feed_ids(node_name,
                    )
     return r.json()
 
+def node_feed_access_encrypted(
+    node_name,
+    feed_id,
+    exponent=None,
+    headers={'Accept': 'application/xml', 'Content-Type': 'application/xml'},
+    modulus=None,
+    target=target,
+    ):
+
+    r=node_request(
+        node_name=node_name,
+        target=target)
+    feeds_endpoint_url=r.json()['links']['feeds']
+
+    url="{}/{}".format(feeds_endpoint_url, feed_id)
+
+    body="""<?xml version="1.0" encoding="UTF-8"?>
+<ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+    <ds:KeyValue>
+        <ds:RSAKeyValue>
+            <ds:Modulus>{}</ds:Modulus>
+            <ds:Exponent>{}</ds:Exponent>
+        </ds:RSAKeyValue>
+    </ds:KeyValue>
+</ds:KeyInfo>""".format(modulus,exponent)
+    data=body
+
+    r=node_request(
+        data=data,
+        headers=headers,
+        node_name=node_name,
+        operation="post",
+        target=target,
+        url=url,
+        )
+    return r
+
 def node_feed_access_unencrypted(node_name,feed_id,
               headers={'Accept': 'application/json', 'Content-Type': 'application/json'},
               target=target,
@@ -546,8 +583,6 @@ def node_feed_access_unencrypted(node_name,feed_id,
         url=url,
         )
     return r
-
-
 
 def node_feeds_access_unencrypted(node_name,feed_id,
               headers={'Accept': 'application/json', 'Content-Type': 'application/json'},
@@ -1488,6 +1523,38 @@ def qiy_nodes_events_source(node_name):
         mimetype="text/event-stream")
 
 
+@app.route('/qiy_nodes/<node_name>/feed/<feed_id>/access/encrypted')
+def qiy_nodes_feed_access_encrypted(node_name,feed_id):
+    info("{}, {}".format(node_name,feed_id))
+
+    exponent="AQAB"
+    modulus="6sNhgtNVksGD4ZK1rW2iiGO11O/BzEIZazovnMK37y3RVvvjmv1z44uA505gyyUTziCntHV9tONmJ11bH4koqqJQFZPXuKAyuu9eR3W/pZ4EGBMMIVH2aqSOsPMTI5K9l2YOW8fAoEZQtYVWsCrygOyctBiamJZRJ+AKFZCIY5E="
+
+    r=node_feed_access_encrypted(node_name,
+                                 feed_id,
+                                 exponent=exponent,
+                                 modulus=modulus,
+                                 target=target,
+                                 )
+    s=escape(request_to_str(r))
+
+    return """
+<h1>Test Node {0}</h1>
+<h2>Feed {1} access encrypted</h2>
+
+<pre>
+{2}
+</pre>
+
+<p>
+<a href="/qiy_nodes/{0}">Up</a>
+""".format(
+    node_name,
+    feed_id,
+    s,
+    )
+
+
 @app.route('/qiy_nodes/<node_name>/feed/<feed_id>/access/unencrypted')
 def qiy_nodes_feed_access_unencrypted(node_name,feed_id):
     info("{}, {}".format(node_name,feed_id))
@@ -1520,6 +1587,8 @@ def qiy_nodes_feed_home(node_name,feed_id):
 
     lis=""
     li='<li><a href="/qiy_nodes/{0}/feed/{1}/access/unencrypted">Access feed unencrypted</a>\n'.format(node_name,feed_id)
+    lis="{}{}\n".format(lis,li)
+    li='<li><a href="/qiy_nodes/{0}/feed/{1}/access/encrypted">Access feed encrypted</a>\n'.format(node_name,feed_id)
     lis="{}{}\n".format(lis,li)
 
     body="<ul>\n{}</ul>\n".format(lis)
