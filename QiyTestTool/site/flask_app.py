@@ -527,8 +527,49 @@ def node_feed_ids(node_name,
                    )
     return r.json()
 
-def node_feed(node_name,feed_id,
-              headers={'Accept': 'application/json', 'Content-Type': 'application/json'}
+def node_feed_access_unencrypted(node_name,feed_id,
+              headers={'Accept': 'application/json', 'Content-Type': 'application/json'},
+              target=target,
+              ):
+    r=node_request(
+        node_name=node_name,
+        target=target)
+    feeds_endpoint_url=r.json()['links']['feeds']
+
+    url="{}/{}".format(feeds_endpoint_url, feed_id)
+
+    r=node_request(
+        headers=headers,
+        node_name=node_name,
+        operation="post",
+        target=target,
+        url=url,
+        )
+    return r
+
+
+
+def node_feeds_access_unencrypted(node_name,feed_id,
+              headers={'Accept': 'application/json', 'Content-Type': 'application/json'},
+              target=target,
+              ):
+    body={feed_id: {'input': ''}}
+    body=None
+    data=dumps(body)
+    data=None
+#    print(data)
+    r=node_request(
+        data=data,
+        endpoint_name="feeds",
+        headers=headers,
+        node_name=node_name,
+        operation="post",
+        target=target)
+    return r
+
+def node_feeds_access_unencrypted(node_name,feed_id,
+              headers={'Accept': 'application/json', 'Content-Type': 'application/json'},
+              target=target,
               ):
     body={feed_id: {'input': ''}}
     body=None
@@ -1451,13 +1492,8 @@ def qiy_nodes_events_source(node_name):
 def qiy_nodes_feed_access_unencrypted(node_name,feed_id):
     info("{}, {}".format(node_name,feed_id))
 
-    r=node_feed(node_name,feed_id)
-    s=request_to_str(r)
-
-    data=""
-    if r.status_code==200:
-        b64=r.json()[feed_id]['output']
-        data="<br><br>base64-decoded output<br><br>\n<pre>{}</pre>".format(escape(b64decode(b64).decode()))
+    r=node_feed_access_unencrypted(node_name,feed_id,target=target)
+    s=escape(request_to_str(r))
 
     return """
 <h1>Test Node {0}</h1>
@@ -1468,14 +1504,11 @@ def qiy_nodes_feed_access_unencrypted(node_name,feed_id):
 </pre>
 
 <p>
-{3}
-<p>
 <a href="/qiy_nodes/{0}">Up</a>
 """.format(
     node_name,
     feed_id,
     s,
-    data,
     )
 
 
