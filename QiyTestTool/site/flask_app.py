@@ -7,6 +7,7 @@ from flask import Flask, Response, request
 from glob import glob
 from json import loads
 from json import dumps
+from json.decoder import JSONDecodeError
 from logging import basicConfig
 from logging import DEBUG
 from logging import WARNING
@@ -336,8 +337,12 @@ def root():
        
     ids=node_ids(target=target)
     lis=""
+    report=""
     for i in ids:
         lis=lis+'<li><a href="qiy_nodes/{0}">{0}</a>'.format(i)
+        if not node_is_accessible(i,target=target):
+            msg="NB: node '{}' is not accessible; please fix before continuing!".format(i)
+            report="{}\n<p>\n{}".format(report,msg)
     
     return """<!DOCTYPE html>
 <html>
@@ -346,6 +351,8 @@ def root():
 <h1>Qiy Test Tool</h1>
 freek.driesenaar@digital-me.nl
 8-2019
+
+{2}
 
 <h2>Service types</h2>
 
@@ -373,7 +380,9 @@ freek.driesenaar@digital-me.nl
 </body>
 </html>
 """.format(service_type_lis,
-           lis)
+           lis,
+           report,
+           )
 
 #
 # <Candidate function(s) for QiyNodeLib>
@@ -507,6 +516,10 @@ def node_feed(node_name,feed_id,
         target=target)
     return r
 
+def node_is_accessible(node_name=None,target=None):
+    r=node_request(node_name=node_name,target=target)
+    return r.status_code==200
+
 def node_orchestrators(
         service_type_url=None,
         target=None
@@ -552,10 +565,15 @@ def node_service_types(target=None):
     service_types=[]
     
     for i in node_names:
-        service_catalogue=node_service_catalogue(i,target=target)
-        for service_type_url in service_catalogue:
-            if not service_type_url in service_types:
-                service_types.append(service_type_url)
+        try:
+            service_catalogue=node_service_catalogue(i,target=target)
+            for service_type_url in service_catalogue:
+                if not service_type_url in service_types:
+                    service_types.append(service_type_url)
+        except JSONDecodeError:
+            msg="Skipping '{}' for JSONDecodeError".format(i)
+            warning(msg)
+            continue
 
     return service_types
 
@@ -601,9 +619,11 @@ def qiy_nodes(node_name):
 
     u_redirect_url=quote_plus("https://test-einwoner.lostlemon.nl/test/qtn/Boxtel")
 
-    return """
-<h1>Test Node {0}</h1>
-
+    body=""
+    if not node_is_accessible(node_name=node_name,target=target):
+        body="NB: The node is not accessible: please consider removing it's Qiy Node Credential."
+    else:
+        body="""
 <ul>
 <li><a href="/qiy_nodes/{0}/action_messages">Action messages</a>
 <li><a href="/qiy_nodes/{0}/connect">Connect</a>
@@ -619,10 +639,17 @@ def qiy_nodes(node_name):
 <li><a href="/qiy_nodes/{0}/pids">Pids</a>
 <li><a href="/qiy_nodes/{0}/redirect_to_eformulieren/{1}">Redirect to Lost Lemon eFormulieren</a>
 </ul>
+""".format(node_name,u_redirect_url)
 
+    return """
+<h1>Test Node {0}</h1>
+
+{1}
+
+<p>
 <a href="/">Home</a>
 
-""".format(node_name,u_redirect_url)
+""".format(node_name,body)
 
 def qiy_nodes_action_messages_json(node_name):
     info("qiy_nodes_action_messages_json({})".format(node_name))
