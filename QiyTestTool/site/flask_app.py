@@ -786,8 +786,8 @@ def data_providers_service_endpoint_feeds_access_callback(data_provider_name):
     info("{}".format(data_provider_name))
     
     request={
-        'url': request.path
-        'method': request.method
+        'url': request.path,
+        'method': request.method,
         'headers': request.headers,
         'body': request.data
     }
@@ -2077,7 +2077,7 @@ def qiy_nodes_pids(node_name):
 
 
 #@app.route('/qiy_nodes/<path:node_name>/pids/<ub_pid>/references/<ub_references_url>')
-@app('/qiy_nodes/<node_name>/pids/references/<ub_references_url>')
+@app.route('/qiy_nodes/<node_name>/pids/references/<ub_references_url>')
 def qiy_nodes_pids_references(node_name,ub_references_url):
     info("qiy_nodes_pids_references({},{})".format(node_name,ub_references_url))
     print(ub_references_url)
