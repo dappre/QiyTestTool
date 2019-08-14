@@ -4,8 +4,10 @@ from calendar import timegm
 from collections import OrderedDict
 from datetime import datetime
 from flask import Flask, Response, request
+from flask import Response
 from glob import glob
 from html import escape
+from json import load
 from json import loads
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -780,27 +782,104 @@ def ub_encode(s):
 
 # </Candidate function(s) for QiyNodeLib>
 
+@app.route('/data_provider/<data_provider_name>/service_type/<ub_service_type_url>/service_endpoint/feeds/access/callback', methods=['get','post'])
+def data_provider_service_type_service_endpoint_feeds_access_callback(data_provider_name,ub_service_type_url):
+    info("{} {}".format(data_provider_name,ub_service_type_url))
 
-@app.route('/data_providers/<data_provider_name>/service_endpoint/feeds/access/callback', methods=['post'])
-def data_providers_service_endpoint_feeds_access_callback(data_provider_name):
-    info("{}".format(data_provider_name))
+    service_type_url=ub_decode(ub_service_type_url)
+
+    response=""
+    data=None
+
+    if not response:
+        info("# Check remote address")
+        trusted_hosts="127.0.0.1"
+        if 'QTT_TRUSTED_HOSTS' in environ:
+            trusted_hosts=getenv('QTT_TRUSTED_HOSTS')
+        if not request.remote_addr in trusted_hosts:
+            warning("Request origin '{}' not in trusted hosts '{}' for service type url {} for Data provider {}.".format(request.remote_addr,trusted_hosts,service_type_url,data_provider_name))
+            response = Response(data, status=404, mimetype='text/plain')
+
+    info("# Check data provider")
+    if not data_provider_name in node_ids(target=target):
+        warning("Data provider {} not found.".format(data_provider_name))
+        response = Response(data, status=404, mimetype='text/plain')
     
-    request={
-        'url': request.path,
-        'method': request.method,
-        'headers': request.headers,
-        'body': request.data
-    }
+    if not response:
+        info("# Check service type")
+        service_catalogue=node_service_catalogue_get(
+            node_name=data_provider_name,
+            target=target,
+            ).json()
+        info("service_catalogue: '{}'".format(service_catalogue))
+        if not service_type_url in service_catalogue:
+            warning("Service type url {} not found for Data provider {} in catalogue '{}'.".format(service_type_url,data_provider_name,dumps(service_catalogue,indent=2)))
+            response = Response(data, status=404, mimetype='text/plain')
+    
+    if not response:
+        info("# Check callback url")
+        service_endpoint_description=service_catalogue[service_type_url]
+        if not request.url == service_endpoint_description['uri']:
+            warning("Url '{}' not found for service type url {} for Data provider {}.".format(request.url,service_type_url,data_provider_name))
+            response = Response(data, status=404, mimetype='text/plain')
+
+    if not response:
+        info("# Check body for being json")
+        if not request.is_json:
+            warning("Body does not contain json for service type url {} for Data provider {}.".format(service_type_url,data_provider_name))
+            response = Response(data, status=404, mimetype='text/plain')
+
+    if not response:
+        info("# Process feed ids")
+        body={}
+        feed_access_requests=request.json
+        for feed_id in feed_access_requests:
+            info("Processing feed id '{}'".format(feed_id))
+            access_request_parameters=None
+            access_request=feed_access_requests[feed_id]
+            if 'input' in access_request:
+                b64=access_request['input']
+                if not b64 is None:
+                    access_request_parameters=b64decode(b64).decode()        
+            output=None
+            feed_contents=access_feed(
+                data_provider_name,
+                service_type_url,
+                feed_id,
+                access_request_parameters,
+                )
+            body[feed_id]=feed_contents
+        
+        data=dumps(body)
+
+        response = Response(data, status=200, mimetype='application/json')
 
 
-    return """
-Content-Type: text/plain
+    return response
 
-{}
-""".format(
-        dumps(request,indent=2)
-    )
+def access_feed(data_provider_name,
+                service_type_url,
+                feed_id,
+                access_request_parameters):
+    feed_contents={'output': None}
+    
+    feeds_path='.'
+    if 'QTT_FEEDS_PATH' in environ:
+        feeds_path=expanduser(getenv('QTT_FEEDS_PATH'))
+    ub_service_type_url=ub_encode(service_type_url)
+    feeds_path=join(feeds_path,ub_service_type_url)
+    feed_path=join(feeds_path,feed_id+".json")
 
+    filenames=glob(feed_path)
+
+    if not len(filenames):
+        warning("No contents found for feed_id '{}' with path '{}'".format(feed_id,feed_path))
+    else:
+        filename=filenames[0]
+        with open(filename,'r') as f:
+            feed_contents=load(f)
+
+    return feed_contents
 
 @app.route('/qiy_nodes/<node_name>')
 def qiy_nodes(node_name):
