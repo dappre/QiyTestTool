@@ -781,6 +781,27 @@ def ub_encode(s):
 # </Candidate function(s) for QiyNodeLib>
 
 
+@app.route('/data_providers/<data_provider_name>/service_endpoint/feeds/access/callback', methods=['post'])
+def data_providers_service_endpoint_feeds_access_callback(data_provider_name):
+    info("{}".format(data_provider_name))
+    
+    request={
+        'url': request.path
+        'method': request.method
+        'headers': request.headers,
+        'body': request.data
+    }
+
+
+    return """
+Content-Type: text/plain
+
+{}
+""".format(
+        dumps(request,indent=2)
+    )
+
+
 @app.route('/qiy_nodes/<node_name>')
 def qiy_nodes(node_name):
     info("qiy_node({})".format(node_name))
@@ -818,6 +839,7 @@ def qiy_nodes(node_name):
 <a href="/">Home</a>
 
 """.format(node_name,body)
+
 
 def qiy_nodes_action_messages_json(node_name):
     info("qiy_nodes_action_messages_json({})".format(node_name))
@@ -2055,7 +2077,7 @@ def qiy_nodes_pids(node_name):
 
 
 #@app.route('/qiy_nodes/<path:node_name>/pids/<ub_pid>/references/<ub_references_url>')
-@app.route('/qiy_nodes/<node_name>/pids/references/<ub_references_url>')
+@app('/qiy_nodes/<node_name>/pids/references/<ub_references_url>')
 def qiy_nodes_pids_references(node_name,ub_references_url):
     info("qiy_nodes_pids_references({},{})".format(node_name,ub_references_url))
     print(ub_references_url)
