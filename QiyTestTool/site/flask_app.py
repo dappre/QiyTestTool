@@ -366,7 +366,7 @@ freek.driesenaar@digital-me.nl
 <form action="/service_types_create" method="get">
 <table><tr><td>
   Service type:</td><td><input type="text" name="service_type_url" value="https://service_type_url">
-  </tr><tr><td>
+  </td></tr><tr><td>
   Data provider name:</td><td><input type="text" name="data_provider_name" value="dp">
   </td></tr><tr><td>
   Service Endpoint type:</td><td><input type="text" name="service_endpoint_type" value="external">
@@ -2208,7 +2208,7 @@ def qtt_service_types(ub_service_type):
                                        target=target)
     lis=""
     for i in data_providers:
-        li='<li><a href="/service_types/{0}/data_providers/{1}">{1}</a>'.format(ub_service_type,i)
+        li='<li><a href="/service_types/{0}/data_providers/{1}/home">{1}</a>'.format(ub_service_type,i)
         lis="{}{}\n".format(lis,li)
     data_provider_lis=lis
     
@@ -2282,24 +2282,98 @@ def qtt_service_types(ub_service_type):
            )
 
 
-@app.route('/service_types/<ub_service_type>/data_providers/<data_provider>')
+@app.route('/service_types/<ub_service_type>/data_providers/<data_provider>/home')
 def qtt_service_types_data_providers(ub_service_type,data_provider):
     info("{}".format(ub_service_type,data_provider))
 
+    # Uggly...
+    page_url="/service_types/{}/data_providers/{}/home".format(ub_service_type,data_provider)
+
     service_type=ub_decode(ub_service_type)
+
+    service_catalogue=node_service_catalogue_get(
+        node_name=data_provider,
+        target=target,
+        ).json()
+
+    service_endpoint_description=service_catalogue[service_type]
+
+    # Check for user updates
+    update=False
+    for i in service_endpoint_description:
+        name="service_endpoint_{}".format(i)
+        
+        
+        if name in request.args:
+            print("{} in request.args".format(name))
+            if not request.args.get(name) == service_endpoint_description[i]:
+                update=True
+                service_endpoint_description[i]=request.args.get(name)
+
+    # Update service description
+    report=""
+    if update:
+        service_catalogue[service_type]=service_endpoint_description
+        r=node_service_catalogue_set(
+            node_name=data_provider,
+            service_catalogue=service_catalogue,
+            target=target,
+            )
+        if not r.status_code==200:
+            report="""
+<h2>NB: Update failed</h2>
+<pre>
+{}
+</pre>
+""".format(
+    escape(request_to_str(r)))
+            
+
+    # Create service description form
+    service_description_form=""
+    rows=""
+    for i in service_endpoint_description:
+        name="service_endpoint_{}".format(i)
+        
+        row="""
+<tr>
+    <td>
+        service endpoint {}
+    </td>
+    <td>
+        <input type="text" name="{}" value="{}">
+    </td>
+</tr>
+""".format(i,name,service_endpoint_description[i])
+        rows="{}\n{}".format(rows,row)
+
+    service_description_form="""
+<form action="{}" method="get">
+    <table>
+        {}        
+    </table>
+    <input type="submit" value="Submit">
+</form>
+""".format(
+    page_url,
+    rows
+    )
 
     return """
 <h1>Service type {0}</h1>
 
 <h2>Data provider {1}</h2>
 
-tbd
+<h2>Service description</h2>
+
+{2}
 
 <p>
-<a href="/service_types/{2}">Up</a>
+<a href="/service_types/{3}">Up</a>
 
 """.format(service_type,
            data_provider,
+           service_description_form,
            ub_service_type,
            )
 
