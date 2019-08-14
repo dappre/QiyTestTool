@@ -364,12 +364,19 @@ freek.driesenaar@digital-me.nl
 <h3>Add service type</h3>
 
 <form action="/service_types_create" method="get">
-  Service type:<br>
-  <input type="text" name="service_type_url" value="https://service_type_url">
+<table><tr><td>
+  Service type:</td><td><input type="text" name="service_type_url" value="https://service_type_url">
+  </tr><tr><td>
+  Data provider name:</td><td><input type="text" name="data_provider_name" value="dp">
+  </td></tr><tr><td>
+  Service Endpoint type:</td><td><input type="text" name="service_endpoint_type" value="external">
+  </td></tr><tr><td>
+  Service Endpoint url:</td><td><input type="text" name="service_endpoint_url" value="">
+  </td></tr><tr><td>
+  Service Endpoint method:</td><td><input type="text" name="service_endpoint_method" value="POST">
+  </td></tr>
+</table>
   <br>
-  Data provider name:<br>
-  <input type="text" name="data_provider_name" value="dp">
-  <br><br>
   <input type="submit" value="Submit">
 </form>
 
@@ -526,7 +533,7 @@ def node_data_providers(
     data_providers=[]
     
     for i in node_names:
-        service_catalogue=node_service_catalogue(i,target=target)
+        service_catalogue=node_service_catalogue_get(i,target=target).json()
         for url in service_catalogue:
             if url == service_type_url:
                 data_providers.append(i)
@@ -678,7 +685,7 @@ def node_orchestrators(
                 orchestrators.append(name)
     return orchestrators
 
-def node_service_catalogue(
+def node_service_catalogue_get(
     node_name,
     target=None,
     ):
@@ -687,7 +694,24 @@ def node_service_catalogue(
                    headers=headers,
                    node_name=node_name,
                    target=target)
-    return r.json()
+    return r
+
+def node_service_catalogue_set(
+    node_name,
+    service_catalogue=None,
+    target=None,
+    ):
+    headers={'Content-Type': 'application/json'}
+    data=dumps(service_catalogue)
+    r=node_request(
+        data=data,
+        endpoint_name="serviceCatalog",
+        headers=headers,
+        node_name=node_name,
+        operation="put",
+        target=target,
+        )
+    return r
 
 def node_ids(target=None):
     creds_path=expanduser(getenv("QIY_CREDENTIALS"))
@@ -710,7 +734,7 @@ def node_service_types(target=None):
     
     for i in node_names:
         try:
-            service_catalogue=node_service_catalogue(i,target=target)
+            service_catalogue=node_service_catalogue_get(i,target=target).json()
             for service_type_url in service_catalogue:
                 if not service_type_url in service_types:
                     service_types.append(service_type_url)
@@ -2158,7 +2182,7 @@ click here to redirect: <a href="{1}">{1}</a>
 def qiy_nodes_service_catalogue(node_name):
     info("{}".format(node_name))
 
-    service_catalogue=node_service_catalogue(node_name,target=target)
+    service_catalogue=node_service_catalogue_get(node_name,target=target).json()
 
     page="""
 <h1>Test Node {0}</h1>
@@ -2445,10 +2469,15 @@ tbd
 def qtt_service_types_create():
     info("start")
 
-    service_type_url = request.args.get('service_type_url')
     data_provider_name = request.args.get('data_provider_name')
+    service_endpoint_method = request.args.get('service_endpoint_method')
+    service_endpoint_type = request.args.get('service_endpoint_type')
+    service_endpoint_url = request.args.get('service_endpoint_url')
+    service_type_url = request.args.get('service_type_url')
 
     report=""
+    status_code=200
+
     if not data_provider_name in node_ids(target=target):
         report="creating node..."
         r=node_create(
@@ -2477,11 +2506,38 @@ def qtt_service_types_create():
                     info("filename {} ok".format(filename))
                     pass
         else:
+            status_code=r.status_code
             report="node not created :-(, {}".format(request_to_str(r))
             
     else:
-        report="Not created; clashing node name '{}'".format(data_provider_name)
-    
+        report="Using existing node '{}'".format(data_provider_name)
+
+    if status_code < 300:
+        service_catalogue=node_service_catalogue_get(
+            node_name=data_provider_name,
+            target=target,
+            ).json()
+        if not service_type_url in service_catalogue:
+            service_endpoint_description={
+                "type": service_endpoint_type,
+                "uri": service_endpoint_url,
+                "method": service_endpoint_method,
+            }
+            service_catalogue[service_type_url]=service_endpoint_description
+            r=node_service_catalogue_set(
+                node_name=data_provider_name,
+                service_catalogue=service_catalogue,
+                target=target,
+                )
+            report="""{}
+{}
+""".format(report,
+           escape(request_to_str(r)))
+            
+        else:
+            report="""{}
+Service type not added; already existing.
+""".format(report)
     
     return """
 <h1>Service type</h1>
@@ -2491,7 +2547,7 @@ service type: {}<br>
 <p>
 
 report:<br>
-{}
+<pre>{}</pre>
 
 <p><a href="/">Up</a>
 """.format(
