@@ -28,6 +28,7 @@ from os import remove
 from os.path import expanduser
 from os.path import join
 #from pyqrcode import create
+from pathlib import Path
 from queue import Queue
 from queue import Empty
 from QiyNodeLib.QiyNodeLib import node_create
@@ -39,6 +40,7 @@ from QiyNodeLib.QiyNodeLib import pretty_print
 from re import findall
 from re import fullmatch
 from requests.exceptions import ChunkedEncodingError
+from shutil import move
 from string import Template
 from threading import Thread
 from threading import Event
@@ -2656,7 +2658,7 @@ def qtt_service_types_create():
     if not data_provider_name in node_ids(target=target):
         report="creating node..."
         r=node_create(
-            node_id=data_provider_name,
+            node_id=str(uuid4()),
             node_name=data_provider_name,
             target=target,
             )
@@ -2669,14 +2671,12 @@ def qtt_service_types_create():
             filenames.append("{}_{}.pem".format(data_provider_name,target[:2]))
             
             creds_path=expanduser(getenv("QIY_CREDENTIALS"))
-            xpr="{}_{}*".format(data_provider_name,target[:2])
-            print(xpr)
-            l=glob(join(creds_path,xpr))
-            print(l)
             for filename in filenames:
-                if not filename in l:
+                p=Path(join(creds_path,filename))
+                if not p.exists():
                     info("moving {} from ./data to {}".format(filename,creds_path))
-                    move("data/"+filename,creds_path)
+                    
+                    move(join("./data/",filename),creds_path)
                 else:
                     info("filename {} ok".format(filename))
                     pass
