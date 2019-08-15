@@ -389,6 +389,18 @@ freek.driesenaar@digital-me.nl
 {1}
 </ul>
 
+<h3>Add node</h3>
+
+<form action="/qiy_nodes_create" method="get">
+<table><tr><td>
+  Node name:</td><td><input type="text" name="node_name" value="dp">
+  </td></tr>
+</table>
+  <br>
+  <input type="submit" value="Submit">
+</form>
+
+
 </body>
 </html>
 """.format(service_type_lis,
@@ -882,6 +894,47 @@ def access_feed(data_provider_name,
             feed_contents=load(f)
 
     return feed_contents
+
+@app.route('/qiy_nodes_create',methods=['get'])
+def qiy_nodes_create():
+    info("start")
+
+    node_name = request.args.get('node_name')
+
+    report=""
+    status_code=200
+
+    if not node_name in node_ids(target=target):
+        report="creating node..."
+        r=node_create(
+            node_id=str(uuid4()),
+            node_name=node_name,
+            target=target,
+            )
+        if r.status_code==201:
+            report="node created :-)"
+        else:
+            status_code=r.status_code
+            report="Error creating node :-(, \n{}".format(request_to_str(r))
+            
+    else:
+        report="Node not created; already exists '{}'".format(node_name)
+    
+    return """
+<h1>Qiy node</h1>
+
+node name: {}<br>
+<p>
+
+report:<br>
+<pre>{}</pre>
+
+<p><a href="/">Up</a>
+""".format(
+    node_name,
+    report,
+    )
+
 
 @app.route('/qiy_nodes/<node_name>')
 def qiy_nodes(node_name):
