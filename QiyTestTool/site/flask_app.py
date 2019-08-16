@@ -41,6 +41,7 @@ from re import findall
 from re import fullmatch
 from requests.exceptions import ChunkedEncodingError
 from shutil import move
+from socket import getfqdn
 from string import Template
 from threading import Thread
 from threading import Event
@@ -375,7 +376,7 @@ freek.driesenaar@digital-me.nl
   </td></tr><tr><td>
   Service Endpoint type:</td><td><input type="text" name="service_endpoint_type" value="external">
   </td></tr><tr><td>
-  Service Endpoint url:</td><td><input type="text" name="service_endpoint_url" value="">
+  Service Endpoint url:</td><td><input type="text" name="service_endpoint_url" value="(default)">
   </td></tr><tr><td>
   Service Endpoint method:</td><td><input type="text" name="service_endpoint_method" value="POST">
   </td></tr>
@@ -2466,6 +2467,16 @@ def qtt_service_types_data_providers(ub_service_type,data_provider):
                 update=True
                 service_endpoint_description[i]=request.args.get(name)
 
+    # Check for default value
+    if service_endpoint_description['uri']=="":
+        fqdn=getfqdn()
+        service_endpoint_description['uri']="https://{}/data_provider/{}/service_type/{}/service_endpoint/feeds/access/callback".format(
+            fqdn,
+            data_provider,
+            ub_service_type,
+            )
+
+
     # Update service description
     report=""
     if update:
@@ -2704,6 +2715,14 @@ def qtt_service_types_create():
     service_endpoint_type = request.args.get('service_endpoint_type')
     service_endpoint_url = request.args.get('service_endpoint_url')
     service_type_url = request.args.get('service_type_url')
+
+    if service_endpoint_url=="":
+        fqdn=getfqdn()
+        service_endpoint_url="https://{}/data_provider/{}/service_type/{}/service_endpoint/feeds/access/callback".format(
+            fqdn,
+            data_provider_name,
+            ub_encode(service_type_url),
+            )
 
     report=""
     status_code=200
