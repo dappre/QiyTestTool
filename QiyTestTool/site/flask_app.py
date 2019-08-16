@@ -52,6 +52,7 @@ from typing import Iterator
 from uuid import uuid4
 from urllib.parse import quote_plus
 from urllib.parse import unquote
+from urllib.parse import urlparse
 
 import flask_sse
 import pymongo
@@ -2469,9 +2470,9 @@ def qtt_service_types_data_providers(ub_service_type,data_provider):
 
     # Check for default value
     if service_endpoint_description['uri']=="":
-        fqdn=getfqdn()
+        netloc=urlparse(request.url).netloc
         service_endpoint_description['uri']="https://{}/data_provider/{}/service_type/{}/service_endpoint/feeds/access/callback".format(
-            fqdn,
+            netloc,
             data_provider,
             ub_service_type,
             )
@@ -2716,10 +2717,11 @@ def qtt_service_types_create():
     service_endpoint_url = request.args.get('service_endpoint_url')
     service_type_url = request.args.get('service_type_url')
 
+    # Check for default value
     if service_endpoint_url=="":
-        fqdn=getfqdn()
+        netloc=urlparse(request.url).netloc
         service_endpoint_url="https://{}/data_provider/{}/service_type/{}/service_endpoint/feeds/access/callback".format(
-            fqdn,
+            netloc,
             data_provider_name,
             ub_encode(service_type_url),
             )
