@@ -36,6 +36,7 @@ from QiyNodeLib.QiyNodeLib import node_connect
 from QiyNodeLib.QiyNodeLib import node_connect_token__create
 from QiyNodeLib.QiyNodeLib import node_get_messages
 from QiyNodeLib.QiyNodeLib import node_request
+from QiyNodeLib.QiyNodeLib import node_transport_password
 from QiyNodeLib.QiyNodeLib import pretty_print
 from re import findall
 from re import fullmatch
@@ -461,6 +462,20 @@ def node_connected_node_names(node_name,target=None):
 
     return connected_node_names
 
+def node_connection(
+    node_name=None,
+    pid=None,
+    target=None,
+    ):
+
+    connection=None
+    connections=node_connections(node_name=node_name, target=target)
+    for i in connections:
+        if i['pid']==pid:
+            connection=i
+
+    return connection
+
 def node_connection_delete(
     node_name=None,
     connection_url=None,
@@ -555,6 +570,15 @@ def node_connection_feed_ids(node_name,
                    target=target)
 
     return r.json()
+
+def node_connections(
+    node_name=None,
+    target=None,
+    ):
+
+    connections=node_request(endpoint_name="connections", node_name=node_name, target=target).json()['result']
+    
+    return connections
 
 def node_data_providers(
     service_type_url=None,
@@ -663,6 +687,87 @@ def node_feed_access_unencrypted(node_name,feed_id,
         )
     return r
 
+def node_feed_request(
+    body_dot_input=None,
+    connection=None,
+    orchestrator=None,
+    feeds_url=None,
+    pid=None,
+    relying_party=None,
+    service_type_url=None,
+    target=None,
+    ):
+
+    r=None
+
+    if not feeds_url is None:
+        info("feeds_url: {}".format(feeds_url))
+        b64_input=None
+        if not body_dot_input is None:
+            b64_input=b64encode(body_dot_input)
+        body={
+          "protocol": service_type_url,
+          "text": "Requesting feed.",
+          "input": b64_input
+        }
+        data=dumps(body)
+        r=node_request(
+            data=data,
+            headers={
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'password': node_transport_password(node_name=relying_party,target=target)
+            },
+            operation="post",
+            node_name=relying_party,
+            target=target,
+            url=feeds_url,
+            )
+        
+    elif not connection is None:
+        info("connection: {}".format(connection))
+        feeds_url=connection['links']['feeds']
+        r=node_feed_request(
+            body_dot_input=body_dot_input,
+            feeds_url=feeds_url,
+            relying_party=relying_party,
+            service_type_url=service_type_url,
+            target=target,
+            )
+
+    elif not pid is None:
+        info("pid: {}".format(pid))
+        connection=node_connection(
+            node_name=relying_party,
+            pid=pid,
+            target=target,
+            )
+
+        r=node_feed_request(
+            body_dot_input=body_dot_input,
+            connection=connection,
+            relying_party=relying_party,
+            service_type_url=service_type_url,
+            target=target,
+            )
+
+    elif not orchestrator is None:
+        info("orchestrator: {}".format(orchestrator))
+        pid=node_pid(
+            node_names=[relying_party,orchestrator],
+            target=target,
+            )
+
+        r=node_feed_request(
+            body_dot_input=body_dot_input,
+            relying_party=relying_party,
+            pid=pid,
+            service_type_url=service_type_url,
+            target=target,
+            )
+    
+    return r
+
 def node_feeds_access_unencrypted(node_name,feed_id,
               headers={'Accept': 'application/json', 'Content-Type': 'application/json'},
               target=target,
@@ -716,6 +821,28 @@ def node_orchestrators(
             if not name in orchestrators:
                 orchestrators.append(name)
     return orchestrators
+
+def node_pid(
+    node_names=None,
+    pid=None,
+    target=target,
+    ):
+
+    pid=None
+
+    if len(node_names)==2:
+        pids=[]
+        for n in node_names:
+            connections=node_connections(n, target=target)
+            for c in connections:
+                p=c['pid']
+                if p in pids:
+                    pid=p
+                    break
+                else:
+                    pids.append(p)
+
+    return pid
 
 def node_service_catalogue_get(
     node_name,
@@ -2724,15 +2851,53 @@ def qtt_service_types_relying_parties_orchestrators_connected(ub_service_type,re
 
 <h2>Relying party {1}</h2>
 
-<h3>Connected orchestrator {2}</h3>
-tbd
+<h3>Connected orchestrator '{2}'</h3>
+
+<a href="/service_types/{3}/relying_parties/{1}/orchestrators/{2}/feed_request">Feed request</a>
 
 <p>
-<a href="/service_types/{3}">Up</a>
+<a href="/service_types/{3}/relying_parties/{1}">Up</a>
 
 """.format(service_type,
            relying_party,
            orchestrator,
+           ub_service_type,
+           )
+
+
+@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/orchestrators/<orchestrator>/feed_request')
+def qtt_service_types_relying_parties_orchestrators_feed_request(ub_service_type,relying_party,orchestrator):
+    info("{}".format(ub_service_type,relying_party,orchestrator))
+
+    service_type=ub_decode(ub_service_type)
+
+    r=node_feed_request(
+        relying_party=relying_party,
+        orchestrator=orchestrator,
+        service_type_url=service_type,
+        target=target,
+        )
+
+    report="<pre>\n{}\n</pre>".format(
+        escape(request_to_str(r)),
+        )
+
+    return """
+<h1>Service type {0}</h1>
+
+<h2>Relying party {1}</h2>
+
+<h3>Connected orchestrator '{2}' - Feed request</h3>
+
+{3}
+
+<p>
+<a href="/service_types/{4}/relying_parties/{1}/home">Up</a>
+
+""".format(service_type,
+           relying_party,
+           orchestrator,
+           report,
            ub_service_type,
            )
 
@@ -2753,7 +2918,7 @@ def qtt_service_types_relying_parties_orchestrators_not_connected(ub_service_typ
 tbd
 
 <p>
-<a href="/service_types/{3}">Up</a>
+<a href="/service_types/{3}/relying_parties/{1}/home">Up</a>
 
 """.format(service_type,
            relying_party,
