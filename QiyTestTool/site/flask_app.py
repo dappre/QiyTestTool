@@ -2388,7 +2388,7 @@ def qtt_service_types(ub_service_type):
             if not connected_to_orchestrator in data_providers and not connected_to_orchestrator in relying_parties:
                 relying_parties.append(connected_to_orchestrator)
     for i in relying_parties:
-        li='<li><a href="/service_types/{0}/relying_parties/{1}">{1}</a>'.format(ub_service_type,i)
+        li='<li><a href="/service_types/{0}/relying_parties/{1}/home">{1}</a>'.format(ub_service_type,i)
         lis="{}{}\n".format(lis,li)
     relying_party_lis=lis
     
@@ -2399,7 +2399,7 @@ def qtt_service_types(ub_service_type):
         if i not in players:
             other_users.append(i)
     for i in other_users:
-        li='<li><a href="/service_types/{0}/relying_parties/{1}">{1}</a>'.format(ub_service_type,i)
+        li='<li><a href="/qiy_nodes/{0}">{0}</a>'.format(ub_service_type,i)
         lis="{}{}\n".format(lis,li)
     other_user_lis=lis
     
@@ -2614,7 +2614,7 @@ tbd
            )
 
 
-@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>')
+@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/home')
 def qtt_service_types_relying_parties(ub_service_type,relying_party):
     info("{}".format(ub_service_type,relying_party))
 
