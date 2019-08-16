@@ -377,7 +377,7 @@ freek.driesenaar@digital-me.nl
   </td></tr><tr><td>
   Service Endpoint type:</td><td><input type="text" name="service_endpoint_type" value="external">
   </td></tr><tr><td>
-  Service Endpoint url:</td><td><input type="text" name="service_endpoint_url" value="(default)">
+  Service Endpoint url:</td><td><input type="text" name="service_endpoint_url" value="">
   </td></tr><tr><td>
   Service Endpoint method:</td><td><input type="text" name="service_endpoint_method" value="POST">
   </td></tr>
