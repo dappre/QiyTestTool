@@ -1002,7 +1002,9 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
 
     if not response:
         info("# Process feed ids")
+        info("request.json: '{}'".request.json)
         body={}
+        
         feed_access_requests=request.json
         for feed_id in feed_access_requests:
             info("Processing feed id '{}'".format(feed_id))
