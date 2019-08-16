@@ -939,6 +939,19 @@ def ub_encode(s):
 
 # </Candidate function(s) for QiyNodeLib>
 
+@app.route('/data_provider/<data_provider_name>/service_type/<ub_service_type_url>/service_endpoint/feeds/callback', methods=['get','post'])
+def data_provider_service_type_service_endpoint_feeds_callback(data_provider_name,ub_service_type_url):
+    info("{} {}".format(data_provider_name,ub_service_type_url))
+
+    feed_id="9238475982347"
+    body={
+        "id": feed_id
+    }
+    data=dumps(feed_id)
+    response = Response(data, status=201, mimetype='application/json')
+
+    return response
+
 @app.route('/data_provider/<data_provider_name>/service_type/<ub_service_type_url>/service_endpoint/feeds/callback/resolve', methods=['get','post'])
 def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_provider_name,ub_service_type_url):
     info("{} {}".format(data_provider_name,ub_service_type_url))
@@ -2856,7 +2869,7 @@ def qtt_service_types_relying_parties_orchestrators_connected(ub_service_type,re
 <a href="/service_types/{3}/relying_parties/{1}/orchestrators/{2}/feed_request">Feed request</a>
 
 <p>
-<a href="/service_types/{3}/relying_parties/{1}">Up</a>
+<a href="/service_types/{3}/relying_parties/{1}/home">Up</a>
 
 """.format(service_type,
            relying_party,
