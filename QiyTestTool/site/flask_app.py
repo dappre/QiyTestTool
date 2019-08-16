@@ -563,16 +563,17 @@ def node_feed_ids_list(
     target=None,
     ):
     node_names=node_ids(target=target)
-    feed_ids=[]
+    feed_ids={}
     
     for i in node_names:
+        feed_ids[i]=[]
         feeds=node_feed_ids(
             i,
             service_type_url=service_type_url,
             target=target,
             )
-        for i in feeds:
-            feed_ids.append(i)
+        for j in feeds:
+            feed_ids[i].append(j)
 
     return feed_ids
 
@@ -2558,8 +2559,21 @@ def qtt_service_types_feeds_list(ub_service_type):
         )
 
     lis=""
-    for i in feed_ids:
-        li='<li><a href="/service_types/{0}/feeds/{1}">{2}</a>'.format(ub_service_type,ub_encode(i),i)
+    for relying_party in feed_ids:
+        li='<li><a href="/service_types/{0}/relying_parties/{1}/home">{1}</a>\n<ul>\n'.format(
+                ub_service_type,
+                relying_party,
+            )
+        feed_lis=""
+        for feed_id in feed_ids[relying_party]:
+            feed_li='<li><a href="/service_types/{0}/relying_parties/{1}/feeds/{2}/home">{3}</a>'.format(
+                ub_service_type,
+                relying_party,
+                ub_encode(feed_id),
+                feed_id
+                )
+            feed_lis="{}{}\n".format(feed_lis,feed_li)
+        li="{}\n{}\n</ul>".format(li,feed_lis)
         lis="{}{}\n".format(lis,li)
 
     feed_ids_lis=lis
@@ -2655,6 +2669,32 @@ def qtt_service_types_relying_parties(ub_service_type,relying_party):
     connected_orchestrator_lis,
     ub_service_type,
     )
+
+
+@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/feeds/<ub_feed_id>/home')
+def qtt_service_types_relying_parties_feeds_home(ub_service_type,relying_party,ub_feed_id):
+    info("{}".format(ub_service_type,relying_party,ub_feed_id))
+
+    service_type=ub_decode(ub_service_type)
+    feed_id=ub_decode(ub_feed_id)
+
+
+    return """
+<h1>Service type {0}</h1>
+
+<h2>Relying party {1}</h2>
+<h2>Feed id {2}</h2>
+
+tbd
+
+<p>
+<a href="/service_types/{3}">Service type home</a>
+
+""".format(service_type,
+           relying_party,
+           feed_id,
+           ub_service_type,
+           )
 
 
 @app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/orchestrators/<orchestrator>/connected')
