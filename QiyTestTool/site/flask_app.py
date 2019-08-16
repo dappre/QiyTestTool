@@ -2399,7 +2399,7 @@ def qtt_service_types(ub_service_type):
         if i not in players:
             other_users.append(i)
     for i in other_users:
-        li='<li><a href="/qiy_nodes/{0}">{0}</a>'.format(ub_service_type,i)
+        li='<li><a href="/qiy_nodes/{0}">{0}</a>'.format(i)
         lis="{}{}\n".format(lis,li)
     other_user_lis=lis
     
