@@ -356,6 +356,19 @@ def root():
 <body>
 
 <h1>Qiy Test Tool</h1>
+
+A tool to assist Qiy integration.<p>
+
+Some links:
+<ul>
+<li><a href="https://github.com/digital-me/QiyTestTool">Server source code on Github</a>
+<li><a href"https://qiy.api.digital-me.nl/">Api used to access the Qiy Trust Network</a>
+<li><a href="https://digital-me.nl">The access provider for the Qiy Trust Network</a>
+<li><a href="https://github.com/qiyfoundation/Qiy-Scheme/blob/topic/Qiy-Scheme-v1.1/High-Level%20Architectural%20Overview.md#21-data-reuse">How the Qiy Trust Network can be used to control your data</a>
+<li><a href="https://qiyfoundation.org/">The Qiy Scheme (standards behind the Qiy Trust Network) are maintained by members of the Qiy Foundation</a>.
+</ul>
+
+<p>
 freek.driesenaar@digital-me.nl
 8-2019
 
