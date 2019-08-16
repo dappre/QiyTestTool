@@ -2566,6 +2566,7 @@ def qtt_service_types_feeds_list(ub_service_type):
             )
         feed_lis=""
         for feed_id in feed_ids[relying_party]:
+            has_feeds=True
             feed_li='<li><a href="/service_types/{0}/relying_parties/{1}/feeds/{2}/home">{3}</a>'.format(
                 ub_service_type,
                 relying_party,
@@ -2574,7 +2575,8 @@ def qtt_service_types_feeds_list(ub_service_type):
                 )
             feed_lis="{}{}\n".format(feed_lis,feed_li)
         li="{}\n{}\n</ul>".format(li,feed_lis)
-        lis="{}{}\n".format(lis,li)
+        if feed_lis:
+            lis="{}{}\n".format(lis,li)
 
     feed_ids_lis=lis
     return """
