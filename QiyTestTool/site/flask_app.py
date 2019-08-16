@@ -798,8 +798,8 @@ def ub_encode(s):
 
 # </Candidate function(s) for QiyNodeLib>
 
-@app.route('/data_provider/<data_provider_name>/service_type/<ub_service_type_url>/service_endpoint/feeds/access/callback', methods=['get','post'])
-def data_provider_service_type_service_endpoint_feeds_access_callback(data_provider_name,ub_service_type_url):
+@app.route('/data_provider/<data_provider_name>/service_type/<ub_service_type_url>/service_endpoint/feeds/callback/resolve', methods=['get','post'])
+def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_provider_name,ub_service_type_url):
     info("{} {}".format(data_provider_name,ub_service_type_url))
 
     service_type_url=ub_decode(ub_service_type_url)
@@ -2471,7 +2471,7 @@ def qtt_service_types_data_providers(ub_service_type,data_provider):
     # Check for default value
     if service_endpoint_description['uri']=="":
         netloc=urlparse(request.url).netloc
-        service_endpoint_description['uri']="https://{}/data_provider/{}/service_type/{}/service_endpoint/feeds/access/callback".format(
+        service_endpoint_description['uri']="https://{}/data_provider/{}/service_type/{}/service_endpoint/feeds/callback".format(
             netloc,
             data_provider,
             ub_service_type,
@@ -2720,7 +2720,7 @@ def qtt_service_types_create():
     # Check for default value
     if service_endpoint_url=="":
         netloc=urlparse(request.url).netloc
-        service_endpoint_url="https://{}/data_provider/{}/service_type/{}/service_endpoint/feeds/access/callback".format(
+        service_endpoint_url="https://{}/data_provider/{}/service_type/{}/service_endpoint/feeds/callback".format(
             netloc,
             data_provider_name,
             ub_encode(service_type_url),
