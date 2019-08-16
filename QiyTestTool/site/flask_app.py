@@ -990,8 +990,8 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
         info("# Check callback url")
         service_endpoint_description=service_catalogue[service_type_url]
         callback_url=request.url.replace("/resolve","")
-        if not request.url == service_endpoint_description['uri']:
-            warning("Url '{}' not found for service type url {} for Data provider {}.".format(request.url,service_type_url,data_provider_name))
+        if not callback_url == service_endpoint_description['uri']:
+            warning("Url '{}' not found for service type url {} for Data provider {}.".format(callback_url,service_type_url,data_provider_name))
             response = Response(data, status=404, mimetype='text/plain')
 
     if not response:
