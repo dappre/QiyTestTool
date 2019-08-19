@@ -8,6 +8,7 @@ from flask import Response
 from flask import send_from_directory
 from flask import url_for
 from glob import glob
+from gzip import decompress
 from html import escape
 from json import load
 from json import loads
@@ -1011,9 +1012,13 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
 
     if not response:
         info("# Check body for being json")
+
         try:
-            data=request.get_data()
-            s=data.decode()
+            if 'Accept-Encoding' in request.headers:
+                if 'gzip,deflate' in request.headers['Accept-Encoding']:
+                    s=decompress(request.data)
+                else:
+                    s=request.data.decode()
             j=loads(s)
         except JSONDecodeError:
             warning("Body does not contain json for service type url {} for Data provider {}:\nbody: '{}'.".format(service_type_url,data_provider_name,request.get_data()))
