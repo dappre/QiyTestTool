@@ -977,12 +977,12 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
             trusted_hosts=getenv('QTT_TRUSTED_HOSTS')
         if not request.remote_addr in trusted_hosts:
             warning("Request origin '{}' not in trusted hosts '{}' for service type url {} for Data provider {}.".format(request.remote_addr,trusted_hosts,service_type_url,data_provider_name))
-            response = Response(data, status=404, mimetype='text/plain')
+            response = Response(data, status=403, mimetype='text/plain')
 
     info("# Check data provider")
     if not data_provider_name in node_ids(target=target):
         warning("Data provider {} not found.".format(data_provider_name))
-        response = Response(data, status=404, mimetype='text/plain')
+        response = Response(data, status=403, mimetype='text/plain')
     
     if not response:
         info("# Check service type")
@@ -993,7 +993,7 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
         info("service_catalogue: '{}'".format(service_catalogue))
         if not service_type_url in service_catalogue:
             warning("Service type url {} not found for Data provider {} in catalogue '{}'.".format(service_type_url,data_provider_name,dumps(service_catalogue,indent=2)))
-            response = Response(data, status=404, mimetype='text/plain')
+            response = Response(data, status=403, mimetype='text/plain')
     
     if not response:
         info("# Check callback url")
@@ -1001,13 +1001,13 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
         callback_url=request.url.replace("/resolve","")
         if not callback_url == service_endpoint_description['uri']:
             warning("Url '{}' not found for service type url {} for Data provider {}.".format(callback_url,service_type_url,data_provider_name))
-            response = Response(data, status=404, mimetype='text/plain')
+            response = Response(data, status=403, mimetype='text/plain')
 
     if not response:
         info("# Check Content-Type for being application/json")
         if not request.is_json:
             warning("Content-Type is not application/json for service type url {} for Data provider {}".format(service_type_url,data_provider_name))
-            response = Response(data, status=404, mimetype='text/plain')
+            response = Response(data, status=403, mimetype='text/plain')
 
     if not response:
         info("# Check body for being json")
@@ -1017,7 +1017,7 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
             j=loads(s)
         except JSONDecodeError:
             warning("Body does not contain json for service type url {} for Data provider {}:\nbody: '{}'.".format(service_type_url,data_provider_name,request.get_data()))
-            response = Response(data, status=404, mimetype='text/plain')
+            response = Response(data, status=403, mimetype='text/plain')
 
     if not response:
         info("# Check body format")
@@ -1037,7 +1037,7 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
         
         if msg:
             warning("{} for service type url {} for Data provider {} and body: '{}'".format(msg,service_type_url,data_provider_name,request.get_data()))
-            response = Response(data, status=404, mimetype='text/plain')
+            response = Response(data, status=403, mimetype='text/plain')
 
     if not response:
         info("# Process feed ids")
