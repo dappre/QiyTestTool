@@ -1070,7 +1070,7 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
 
         response = Response(data, status=200, mimetype='application/json')
 
-    info("# Returning ...")
+    info("# Returning data: '{}' and response: '{}'".format(data,response))
 
     return response
 
