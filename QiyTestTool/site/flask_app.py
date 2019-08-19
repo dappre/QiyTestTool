@@ -5,6 +5,8 @@ from collections import OrderedDict
 from datetime import datetime
 from flask import Flask, Response, request
 from flask import Response
+from flask import send_from_directory
+from flask import url_for
 from glob import glob
 from html import escape
 from json import load
@@ -61,6 +63,8 @@ import random
 import string
 import sys
 
+
+
 log_levels={}
 log_levels['DEBUG']=DEBUG
 log_levels['INFO']=INFO
@@ -99,7 +103,6 @@ info("Start")
 
 
 app = Flask(__name__)
-
 
 class NoDataReceivedException(Exception):
     def __init__(self):
@@ -333,6 +336,11 @@ def message_poller(connection_url=None,node_name=None,target=None) -> Iterator[s
         sse = ServerSentEvent(str(message), None)
         yield sse.encode()
         sleep(15)
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/')
 def root():
@@ -952,6 +960,7 @@ def data_provider_service_type_service_endpoint_feeds_callback(data_provider_nam
 
     return response
 
+
 @app.route('/data_provider/<data_provider_name>/service_type/<ub_service_type_url>/service_endpoint/feeds/callback/resolve', methods=['get','post'])
 def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_provider_name,ub_service_type_url):
     info("{} {}".format(data_provider_name,ub_service_type_url))
@@ -995,15 +1004,43 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
             response = Response(data, status=404, mimetype='text/plain')
 
     if not response:
-        info("# Check body for being json")
+        info("# Check Content-Type for being application/json")
         if not request.is_json:
-            warning("Body does not contain json for service type url {} for Data provider {}.".format(service_type_url,data_provider_name))
+            warning("Content-Type is not application/json for service type url {} for Data provider {}".format(service_type_url,data_provider_name))
+            response = Response(data, status=404, mimetype='text/plain')
+
+    if not response:
+        info("# Check body for being json")
+        try:
+            data=request.get_data()
+            s=data.decode()
+            j=loads(s)
+        except JSONDecodeError:
+            warning("Body does not contain json for service type url {} for Data provider {}:\nbody: '{}'.".format(service_type_url,data_provider_name,request.get_data()))
+            response = Response(data, status=404, mimetype='text/plain')
+
+    if not response:
+        info("# Check body format")
+        msg=""
+        body=request.json
+        
+        info("# Checking body for not being empty")
+        if body=={}:
+            msg="Empty body"
+
+        if not msg:
+            info("# Checking members for containing json objects") # "<feed_id>": { ... }
+            for feed_id in body:
+                if not type(body[feed_id])==dict:
+                    msg="member '{}' does not contain a json object".format(body[feed_id])
+                    break
+        
+        if msg:
+            warning("{} for service type url {} for Data provider {} and body: '{}'".format(msg,service_type_url,data_provider_name,request.get_data()))
             response = Response(data, status=404, mimetype='text/plain')
 
     if not response:
         info("# Process feed ids")
-        info("# Test test...")
-        info("request.json: '{}'".format(request.json))
         body={}
         
         feed_access_requests=request.json
