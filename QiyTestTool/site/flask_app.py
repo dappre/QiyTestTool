@@ -958,7 +958,7 @@ def data_provider_service_type_service_endpoint_feeds_callback(data_provider_nam
         "id": feed_id
     }
     data=dumps(body)
-1024    headers=None
+    headers=None
     response = Response(data, status=201, mimetype='application/json')
 
     return response
