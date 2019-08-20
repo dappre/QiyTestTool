@@ -1015,8 +1015,8 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
         info("# - headers: '{}'".format(request.headers))
 
         try:
-            if 'Accept-Encoding' in request.headers:
-                if 'gzip,deflate' in request.headers['Accept-Encoding']:
+            if 'Content-Encoding' in request.headers:
+                if 'gzip' in request.headers['Content-Encoding']:
                     s=decompress(request.data)
                 else:
                     s=request.data.decode()
