@@ -1012,6 +1012,7 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
 
     if not response:
         info("# Check body for being json")
+        info("# - headers: '{}'".format(request.headers))
 
         try:
             if 'Accept-Encoding' in request.headers:
