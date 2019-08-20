@@ -1073,7 +1073,7 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
         headers=None
         if 'Accept-Encoding' in request.headers:
             if 'gzip' in request.headers['Accept-Encoding']:
-                data=compress(data)
+                data=compress(data.encode())
                 headers={'Content-Encoding':'gzip'}
 
         response = Response(data, headers=headers, status=200, mimetype='application/json')
