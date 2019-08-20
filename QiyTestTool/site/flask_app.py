@@ -8,6 +8,7 @@ from flask import Response
 from flask import send_from_directory
 from flask import url_for
 from glob import glob
+from gzip import compress
 from gzip import decompress
 from html import escape
 from json import load
@@ -1069,9 +1070,15 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
         
         data=dumps(body)
 
-        response = Response(data, status=200, mimetype='application/json')
+        headers=None
+        if 'Accept-Encoding' in request.headers:
+            if 'gzip' in getenv('Accept-Encoding'):
+                data=compress(data)
+                headers={'Content-Encoding':'gzip'}
 
-    info("# Returning data: '{}' and response: '{}'".format(data,response))
+        response = Response(data, headers=headers, status=200, mimetype='application/json')
+
+    info("# Returning data: '{}', headers: '{}', and response: '{}'".format(data,headers,response))
 
     return response
 
