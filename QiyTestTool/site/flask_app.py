@@ -958,6 +958,7 @@ def data_provider_service_type_service_endpoint_feeds_callback(data_provider_nam
         "id": feed_id
     }
     data=dumps(body)
+    headers=None
     response = Response(data, status=201, mimetype='application/json')
 
     return response
@@ -1070,7 +1071,6 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
         
         data=dumps(body)
 
-        headers=None
         if 'Accept-Encoding' in request.headers:
             if 'gzip' in request.headers['Accept-Encoding']:
                 data=compress(data.encode())
