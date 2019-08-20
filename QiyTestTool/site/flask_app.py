@@ -971,6 +971,7 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
     service_type_url=ub_decode(ub_service_type_url)
 
     response=""
+    headers=None
     data=None
 
     if not response:
