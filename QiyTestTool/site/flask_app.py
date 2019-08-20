@@ -958,7 +958,7 @@ def data_provider_service_type_service_endpoint_feeds_callback(data_provider_nam
         "id": feed_id
     }
     data=dumps(body)
-    headers=None
+1024    headers=None
     response = Response(data, status=201, mimetype='application/json')
 
     return response
@@ -1022,6 +1022,8 @@ def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_prov
                     s=decompress(request.data)
                 else:
                     s=request.data.decode()
+            else:
+                    s=request.data.decode()               
             body=loads(s)
         except JSONDecodeError:
             warning("Body does not contain json for service type url {} for Data provider {}:\nbody: '{}'.".format(service_type_url,data_provider_name,request.get_data()))
