@@ -2060,7 +2060,11 @@ def qiy_nodes_events_source(node_name):
 
     def gen(node_name) -> Iterator[str]:
             listener_id=generate_id()
-            info("{}: Starting events listener...".format(listener_id))
+            msg="{}: Starting events listener...".format(listener_id)
+            info(msg)
+            sse=ServerSentEvent(msg,None)
+            yield sse.encode()
+            
             stop_listening=Event()
             queue=Queue()
             listen_to_node(queue,stop_listening,node_name=node_name)
@@ -2068,31 +2072,41 @@ def qiy_nodes_events_source(node_name):
 
             while True:
                 try:
-                    event=queue.get(timeout=100)
+                    event="{}: '{}'".format(listener_id,queue.get(timeout=100))
                 except Empty:
+                    msg="{}: catched Empty exception".format(listener_id)
+                    warning(msg)
+                    sse=ServerSentEvent(event,None)
+                    yield sse.encode()
+                    
                     if 'QTT_URLLIB_FIXED' in environ:
                         if getenv('QTT_URLLIB_FIXED')=='TRUE':
                             info("{}: QTT_URLLIB_FIXED=='TRUE': Reusing connection on Empty exception".format(listener_id))
                         else:
                             info("{}: QTT_URLLIB_FIXED!='TRUE': Using new connection on Empty exception".format(listener_id))
-                            info("{}: event: '{}'".format(listener_id,event))
+                            info("event: '{}'".format(event))
                             sse=ServerSentEvent(event,None)
                             yield sse.encode()
                             break
                     else:
                         info("{}: QTT_URLLIB_FIXED not in environ: Using new connection on Empty exception".format(listener_id))
-                        info("{}: event: '{}'".format(listener_id,event))
+                        info("event: '{}'".format(event))
                         sse=ServerSentEvent(event,None)
                         yield sse.encode()
                         break
 
-                info("{}: event: '{}'".format(listener_id,event))
+                info("event: '{}'".format(event))
                 sse=ServerSentEvent(event,None)
                 yield sse.encode()
 
-            info("{}: Stopping events listener...".format(listener_id))
+            msg="{}: Stopping events listener...".format(listener_id)
+            info(msg)
+            
             stop_listening.set()
-            info("{}: Events listener stopped".format(listener_id))
+            msg="{}: Events listener stopped".format(listener_id)
+            info(msg)
+            sse=ServerSentEvent(msg,None)
+            yield sse.encode()
 
     return Response(
         gen(node_name),
