@@ -2043,6 +2043,16 @@ def qiy_nodes_events(node_name):
 <a href="/qiy_nodes/{0}">Up</a>
 
 <script>
+const url="/qiy_nodes/{0}/events"
+fetch(url) // Call the fetch function passing the url of the API as a parameter
+.then(function() {{
+    // Your code for handling the data you get from the API
+    console.log('no problem accessing events source')
+}})
+.catch(function() {{
+    // This is where you run code if the server returns any errors
+    console.log('problem accessing events source')
+}});
 try {{
   var el = document.getElementById('events');
   el.innerHTML = "Start"
