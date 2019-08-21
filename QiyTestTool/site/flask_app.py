@@ -2043,11 +2043,18 @@ def qiy_nodes_events(node_name):
 <a href="/qiy_nodes/{0}">Up</a>
 
 <script>
-var eventEventSource = new EventSource('/qiy_nodes/{0}/events/source');
-eventEventSource.onmessage = function(m) {{
+try {{
+  var el = document.getElementById('events');
+  el.innerHTML = "Start"
+  var eventEventSource = new EventSource('/qiy_nodes/{0}/events/source');
+  eventEventSource.onmessage = function(m) {{
 	console.log(m);
 	var el = document.getElementById('events');
 	el.innerHTML = m.data + "<br>" + el.innerHTML;
+  }}
+}}
+catch(error) {{
+  console.error(error);
 }}
 </script>
 
