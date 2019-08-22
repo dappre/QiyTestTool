@@ -2097,7 +2097,7 @@ def qiy_nodes_events_source(node_name):
             listen_to_node(queue,stop_listening,node_name=node_name)
             info("{}: Events listener started.".format(listener_id))
 
-            while True:
+            if True:
                 try:
                     event="{}: '{}'".format(listener_id,queue.get(timeout=100))
                 except Empty:
@@ -2114,13 +2114,11 @@ def qiy_nodes_events_source(node_name):
                             info("event: '{}'".format(event))
                             sse=ServerSentEvent(event,None)
                             yield sse.encode()
-                            break
                     else:
                         info("{}: QTT_URLLIB_FIXED not in environ: Using new connection on Empty exception".format(listener_id))
                         info("event: '{}'".format(event))
                         sse=ServerSentEvent(event,None)
                         yield sse.encode()
-                        break
 
                 info("event: '{}'".format(event))
                 sse=ServerSentEvent(event,None)
@@ -2135,9 +2133,11 @@ def qiy_nodes_events_source(node_name):
             sse=ServerSentEvent(msg,None)
             yield sse.encode()
 
-    return Response(
+    response=Response(
         gen(node_name),
         mimetype="text/event-stream")
+    response.headers['X-Accel-Buffering'] = 'no'
+    return response
 
 
 @app.route('/qiy_nodes/<node_name>/feed/<feed_id>/access/encrypted')
