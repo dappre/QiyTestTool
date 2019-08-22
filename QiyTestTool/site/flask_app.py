@@ -1928,16 +1928,26 @@ def qiy_nodes_connect_tokens(node_name):
 
     connection_tokens=qiy_nodes_connect_tokens_json(node_name)
 
+    new_connect_token=node_connect_token__create(
+        node_name=node_name,
+        target=target,
+        )
+
     return """
 <h1>Test Node {0}  Connect Tokens</h1>
 
 <pre>
 {1}
 </pre>
+<h1>New one</h1>
+<pre>
+{2}
+</pre>
 
 <a href="/qiy_nodes/{0}">Up</a>
 
-""".format(node_name,dumps(connection_tokens,indent=2))
+""".format(node_name,dumps(connection_tokens,indent=2),
+           dumps(new_connect_token))
 
 @app.route('/qiy_nodes/<node_name>/consume_connect_token')
 def qiy_nodes_consume_connect_token(node_name):
