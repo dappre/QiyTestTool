@@ -85,7 +85,7 @@ basicConfig(filename="QiyTestTool.log",
 if not 'TARGET' in environ:
     critical("ERROR: No TARGET specified.")
     exit(1)
-if not environ['TARGET'] in ['dev2','acc']:
+if not environ['TARGET'] in ['local','dev2','acc']:
     critical("ERROR: No valid TARGET specified.")
     exit(1)
 
