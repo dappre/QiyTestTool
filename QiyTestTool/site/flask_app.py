@@ -2607,6 +2607,7 @@ def qiy_nodes_proxy(node_name,path):
     else:
         body="""[{"dateEnd":null,"dateCreated":"2019-08-22T08:05:46.108Z","dateModified":"2019-08-22T08:05:46.108Z","dateDelete":"2019-09-06T22:00:00.000Z","dateStart":null,"datePublish":"2019-08-21T22:00:00.000Z","id":"5d5e4cdaa514acb073fd6cf6","status":"draft","name":"Superwinkel - hugo boss"}]"""
         data=body
+        headers={'Access-Control-Allow-Origin':'*'}
 
         response=Response(data, status=200, mimetype='application/json')
 
