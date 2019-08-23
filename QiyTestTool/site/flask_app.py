@@ -35,9 +35,11 @@ from os.path import join
 from pathlib import Path
 from queue import Queue
 from queue import Empty
+from QiyNodeLib.QiyNodeLib import node_auth_header
 from QiyNodeLib.QiyNodeLib import node_create
 from QiyNodeLib.QiyNodeLib import node_connect
 from QiyNodeLib.QiyNodeLib import node_connect_token__create
+from QiyNodeLib.QiyNodeLib import node_endpoint
 from QiyNodeLib.QiyNodeLib import node_get_messages
 from QiyNodeLib.QiyNodeLib import node_request
 from QiyNodeLib.QiyNodeLib import node_transport_password
@@ -62,6 +64,7 @@ from urllib.parse import urlparse
 import flask_sse
 import pymongo
 import random
+import requests
 import string
 import sys
 
@@ -2573,9 +2576,7 @@ Feed {2}
 def qiy_nodes_proxy(node_name,path):
     info("{}".format(node_name,path))
 
-    # Resolve endpoint
-    # .../proxy/api, /serviceCatalogue  /...
-    # Check Accept header.
+    # Return webpage for text/html requests.
     accept_header=None
     if 'Accept' in request.headers:
         accept_header=request.headers['Accept']
@@ -2605,11 +2606,56 @@ def qiy_nodes_proxy(node_name,path):
 
         response=html
     else:
-        body="""[{"dateEnd":null,"dateCreated":"2019-08-22T08:05:46.108Z","dateModified":"2019-08-22T08:05:46.108Z","dateDelete":"2019-09-06T22:00:00.000Z","dateStart":null,"datePublish":"2019-08-21T22:00:00.000Z","id":"5d5e4cdaa514acb073fd6cf6","status":"draft","name":"Superwinkel - hugo boss"}]"""
-        data=body
-        headers={'Access-Control-Allow-Origin':'*'}
+        # Forward to Qiy Trust Network
+        stream=None
 
-        response=Response(data, headers=headers, status=200, mimetype='application/json')
+        node_endpoint_url=node_endpoint(target=target)
+        url="{}/{}".format(node_endpoint_url,path).replace("/api/","/")
+        print(url)
+        if request.args:
+            url=url+"?"
+            for parameter in request.args:
+                url="{0}{1}={2}&".format(url,parameter,request.args[parameter])
+            url=url[0:len(url)-1]
+        headers={}
+        for name, value in request.headers:
+            headers[name]=value
+        data=request.data
+        
+        # Authenticate authenticated requests
+        authorization_header=None
+        if 'Authorization' in headers:
+            authorization_header=headers['Authorization']
+        elif 'authorization' in headers:
+            authorization_header=headers['authorization']
+
+        if not authorization_header is None:
+            info("Authenticating request...")
+            # For now always include transportpassword
+            headers['Authorization']=node_auth_header(data=data,node_name=node_name,target=target)
+            headers['password']=node_transport_password(node_name=node_name,target=target)
+        # Return response
+
+        methods={
+            "delete": requests.delete,
+            "get": requests.get,
+            "options": requests.options,
+            "patch": requests.patch,
+            "post": requests.post,
+            "put": requests.put,
+            }
+        method=request.method
+        method=method.lower()
+        r=methods[method](url,headers=headers,data=data,stream=stream)
+        info(request_to_str(r))
+
+        mimetype=None
+        if 'Content-Type' in r.headers:
+            mimetype=r.headers['Content-Type']
+        headers=r.headers
+        headers=None
+        response=Response(r.text, headers=headers, status=r.status_code, mimetype=mimetype)
+
 
     return response
 
