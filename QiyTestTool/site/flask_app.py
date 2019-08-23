@@ -914,25 +914,40 @@ def node_service_types(target=None):
 
     return service_types
 
-def request_to_str(r):
+def request_to_str(r,r_is_request=False):
+    if not r_is_request:
+        response=r
+        request=response.request
+    else:
+        response=None
+        request=r
+
     s="\n"
     s=s+"-------------------------------------------------------------------------------------------\n"
     s=s+"Request:\n"
-    s=s+"{0} {1} HTTP/1.1\n".format(r.request.method,r.request.url)
+    s=s+"{0} {1} HTTP/1.1\n".format(request.method,request.url)
     s=s+"\n"
-    headers=r.request.headers
+    headers=request.headers
     for header in headers:
-        s=s+"{0}: {1}\n".format(header,headers[header])
-    s=s+"\n"
-    s=s+str(r.request.body)
-    s=s+"\n\n"
-    s=s+"Response:\n"
-    s=s+str(r.status_code)+"\n"
-    headers=r.headers
-    for header in headers:
-        s=s+"{0}: {1}\n".format(header,headers[header])
-    s=s+"\n"
-    s=s+r.text
+        if r_is_request:
+            s=s+"{0}\n".format(header)
+        else:
+            s=s+"{0}: {1}\n".format(header,headers[header])
+    if r_is_request:
+        body=str(request.data)
+    else:
+        body=request.body
+    s=s+str(body)
+    if not response is None:
+        s=s+"\n"
+        s=s+"\n\n"
+        s=s+"Response:\n"
+        s=s+str(response.status_code)+"\n"
+        headers=response.headers
+        for header in headers:
+            s=s+"{0}: {1}\n".format(header,headers[header])
+        s=s+"\n"
+        s=s+response.text
     s=s+"\n-------------------------------------------------------------------------------------------\n"
     
     return s
@@ -1173,6 +1188,7 @@ def qiy_nodes(node_name):
 <li><a href="/qiy_nodes/{0}/feeds">Feeds</a>
 <li><a href="/qiy_nodes/{0}/messages/since/60">Messages since 1h</a> (<a href="/qiy_nodes/{0}/messages/since/1440">1 day</a>)
 <li><a href="/qiy_nodes/{0}/service_catalogue">Service Catalogue</a>
+<li><a href="/qiy_nodes/{0}/proxy/example_request">Proxy (example request)</a>
 <li><a href="/qiy_nodes/{0}/pids">Pids</a>
 <li><a href="/qiy_nodes/{0}/redirect_to_eformulieren/{1}">Redirect to Lost Lemon eFormulieren</a>
 </ul>
@@ -2551,6 +2567,35 @@ Feed {2}
 <a href="/qiy_nodes/{0}/pids">Up</a>
 
 """.format(node_name,references_url,feed_id,result)
+
+
+@app.route('/qiy_nodes/<node_name>/proxy/<path:path>',methods=['get'])
+def qiy_nodes_proxy(node_name,path):
+    info("{}".format(node_name,path))
+
+    # Resolve endpoint
+    # .../proxy/api, /serviceCatalogue  /...
+    # Check Accept header.
+
+    # Return received request
+    received_request=escape(request_to_str(request,r_is_request=True))
+
+    html="""
+<h1>Test Node {0} Proxy</h1>
+
+<pre>
+{1}
+</pre>
+
+<a href="/qiy_nodes/{0}">Up</a>
+
+""".format(node_name,
+           received_request,
+           )
+
+    response=html
+
+    return response
 
 
 @app.route('/qiy_nodes/<node_name>/redirect_to_eformulieren/<path:u_url>')
