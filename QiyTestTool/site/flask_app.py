@@ -2609,7 +2609,7 @@ def qiy_nodes_proxy(node_name,path):
         data=body
         headers={'Access-Control-Allow-Origin':'*'}
 
-        response=Response(data, status=200, mimetype='application/json')
+        response=Response(data, headers=headers, status=200, mimetype='application/json')
 
     return response
 
