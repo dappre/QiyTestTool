@@ -2576,24 +2576,39 @@ def qiy_nodes_proxy(node_name,path):
     # Resolve endpoint
     # .../proxy/api, /serviceCatalogue  /...
     # Check Accept header.
+    accept_header=None
+    if 'Accept' in request.headers:
+        accept_header=request.headers['Accept']
+    elif 'accept' in request.headers:
+        accept_header=request.headers['accept']
 
-    # Return received request
-    received_request=escape(request_to_str(request,r_is_request=True))
+    received_request=request_to_str(request,r_is_request=True)
+    info(received_request)
+    received_request=escape(received_request)
 
-    html="""
-<h1>Test Node {0} Proxy</h1>
+    response=None
+    if 'text/html' in accept_header:
+        # Return received request
 
-<pre>
-{1}
-</pre>
+        html="""
+    <h1>Test Node {0} Proxy</h1>
 
-<a href="/qiy_nodes/{0}">Up</a>
+    <pre>
+    {1}
+    </pre>
 
-""".format(node_name,
-           received_request,
-           )
+    <a href="/qiy_nodes/{0}">Up</a>
 
-    response=html
+    """.format(node_name,
+               received_request,
+               )
+
+        response=html
+    else:
+        body="""[{"dateEnd":null,"dateCreated":"2019-08-22T08:05:46.108Z","dateModified":"2019-08-22T08:05:46.108Z","dateDelete":"2019-09-06T22:00:00.000Z","dateStart":null,"datePublish":"2019-08-21T22:00:00.000Z","id":"5d5e4cdaa514acb073fd6cf6","status":"draft","name":"Superwinkel - hugo boss"}]"""
+        data=body
+
+        response=Response(data, status=200, mimetype='application/json')
 
     return response
 
