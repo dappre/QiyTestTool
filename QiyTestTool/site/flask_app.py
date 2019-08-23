@@ -1188,7 +1188,7 @@ def qiy_nodes(node_name):
 <li><a href="/qiy_nodes/{0}/feeds">Feeds</a>
 <li><a href="/qiy_nodes/{0}/messages/since/60">Messages since 1h</a> (<a href="/qiy_nodes/{0}/messages/since/1440">1 day</a>)
 <li><a href="/qiy_nodes/{0}/service_catalogue">Service Catalogue</a>
-<li><a href="/qiy_nodes/{0}/proxy">Proxy</a>
+<li><a href="/qiy_nodes/{0}/proxy/example_request">Proxy (example request)</a>
 <li><a href="/qiy_nodes/{0}/pids">Pids</a>
 <li><a href="/qiy_nodes/{0}/redirect_to_eformulieren/{1}">Redirect to Lost Lemon eFormulieren</a>
 </ul>
@@ -2569,9 +2569,9 @@ Feed {2}
 """.format(node_name,references_url,feed_id,result)
 
 
-@app.route('/qiy_nodes/<node_name>/proxy',methods=['get'])
-def qiy_nodes_proxy(node_name):
-    info("{}".format(node_name))
+@app.route('/qiy_nodes/<node_name>/proxy/<path:path>',methods=['get'])
+def qiy_nodes_proxy(node_name,path):
+    info("{}".format(node_name,path))
 
     # Resolve endpoint
     # .../proxy/api, /serviceCatalogue  /...
@@ -2579,7 +2579,6 @@ def qiy_nodes_proxy(node_name):
 
     # Return received request
     received_request=escape(request_to_str(request,r_is_request=True))
-
 
     html="""
 <h1>Test Node {0} Proxy</h1>
