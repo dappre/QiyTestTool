@@ -986,6 +986,8 @@ def data_provider_service_type_service_endpoint_feeds_callback(data_provider_nam
 def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_provider_name,ub_service_type_url):
     info("{} {}".format(data_provider_name,ub_service_type_url))
 
+    info("incoming request: '{}'".format(request_to_str(request,r_is_request=True)))
+
     service_type_url=ub_decode(ub_service_type_url)
 
     response=""
@@ -2577,11 +2579,13 @@ def qiy_nodes_proxy(node_name,path):
     info("{}".format(node_name,path))
 
     # Return webpage for text/html requests.
+    print("request.headers: '{}'".format(request.headers))
     accept_header=None
     if 'Accept' in request.headers:
         accept_header=request.headers['Accept']
     elif 'accept' in request.headers:
         accept_header=request.headers['accept']
+    print("accept_header: '{}'".format(accept_header))
 
     received_request=request_to_str(request,r_is_request=True)
     info(received_request)
@@ -2610,16 +2614,23 @@ def qiy_nodes_proxy(node_name,path):
         stream=None
 
         node_endpoint_url=node_endpoint(target=target)
-        url="{}/{}".format(node_endpoint_url,path).replace("/api/","/")
-        print(url)
+        url=node_endpoint_url
         if request.args:
             url=url+"?"
             for parameter in request.args:
                 url="{0}{1}={2}&".format(url,parameter,request.args[parameter])
             url=url[0:len(url)-1]
+        print("url: {}''".format(url))
         headers={}
-        for name, value in request.headers:
-            headers[name]=value
+        ignore_headers=['Postman-Token',
+                        'Host',
+                        'X-Mock-Response-Code',
+                        'Cache-Control'
+                        #'', HIER WAS IK GEBLEVEN...
+                        ]
+        headers['Accept']='application/json'
+#        for name, value in request.headers:
+#            headers[name]=value
         data=request.data
         
         # Authenticate authenticated requests
