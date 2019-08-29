@@ -955,6 +955,19 @@ def request_to_str(r,r_is_request=False):
     
     return s
 
+def response_to_str(response):
+    s="-------------------------------------------------------------------------------------------\n"
+    s=s+"Response:\n"
+    s=s+str(response.status_code)+"\n"
+    headers=response.headers
+    for header in headers:
+        s=s+"{0}: {1}\n".format(header,headers[header])
+    s=s+"\n"
+    s=s+response.text
+    s=s+"\n-------------------------------------------------------------------------------------------\n"
+    
+    return s
+
 def ub_decode(ub):
     bu=unquote(ub)
     bu=b64decode(bu).decode()
@@ -2608,7 +2621,9 @@ def qiy_nodes_proxy(node_name,path):
                received_request,
                )
 
-        response=html
+        response=Response(html)
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        
     else:
         # Forward to Qiy Trust Network
         stream=None
@@ -2658,15 +2673,14 @@ def qiy_nodes_proxy(node_name,path):
         method=request.method
         method=method.lower()
         r=methods[method](url,headers=headers,data=data,stream=stream)
-        info(request_to_str(r))
+        info("Response from qtn: '{}'".format(request_to_str(r)))
 
         mimetype=None
         if 'Content-Type' in r.headers:
             mimetype=r.headers['Content-Type']
-        headers=r.headers
-        headers=None
+        headers={'Access-Control-Allow-Origin':'*'}
         response=Response(r.text, headers=headers, status=r.status_code, mimetype=mimetype)
-
+        #info("Response to qtt client: '{}'".format(response_to_str(response)))
 
     return response
 
