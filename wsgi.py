@@ -107,7 +107,7 @@ debug(configuration)
 info("Start")
 
 
-app = Flask(__name__)
+application = Flask(__name__)
 
 class NoDataReceivedException(Exception):
     def __init__(self):
@@ -342,12 +342,12 @@ def message_poller(connection_url=None,node_name=None,target=None) -> Iterator[s
         yield sse.encode()
         sleep(15)
 
-@app.route('/favicon.ico')
+@application.route('/favicon.ico')
 def favicon():
     return send_from_directory(join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
-@app.route('/')
+@application.route('/')
 def root():
     info("root()")
 
@@ -980,7 +980,7 @@ def ub_encode(s):
 
 # </Candidate function(s) for QiyNodeLib>
 
-@app.route('/data_provider/<data_provider_name>/service_type/<ub_service_type_url>/service_endpoint/feeds/callback', methods=['get','post'])
+@application.route('/data_provider/<data_provider_name>/service_type/<ub_service_type_url>/service_endpoint/feeds/callback', methods=['get','post'])
 def data_provider_service_type_service_endpoint_feeds_callback(data_provider_name,ub_service_type_url):
     info("{} {}".format(data_provider_name,ub_service_type_url))
 
@@ -995,7 +995,7 @@ def data_provider_service_type_service_endpoint_feeds_callback(data_provider_nam
     return response
 
 
-@app.route('/data_provider/<data_provider_name>/service_type/<ub_service_type_url>/service_endpoint/feeds/callback/resolve', methods=['get','post'])
+@application.route('/data_provider/<data_provider_name>/service_type/<ub_service_type_url>/service_endpoint/feeds/callback/resolve', methods=['get','post'])
 def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_provider_name,ub_service_type_url):
     info("{} {}".format(data_provider_name,ub_service_type_url))
 
@@ -1142,7 +1142,7 @@ def access_feed(data_provider_name,
 
     return feed_contents
 
-@app.route('/qiy_nodes_create',methods=['get'])
+@application.route('/qiy_nodes_create',methods=['get'])
 def qiy_nodes_create():
     info("start")
 
@@ -1183,7 +1183,7 @@ report:<br>
     )
 
 
-@app.route('/qiy_nodes/<node_name>')
+@application.route('/qiy_nodes/<node_name>')
 def qiy_nodes(node_name):
     info("qiy_node({})".format(node_name))
 
@@ -1242,7 +1242,7 @@ def qiy_nodes_action_messages_json(node_name):
     return sorted_action_messages
 
 
-@app.route('/qiy_nodes/<node_name>/action_messages')
+@application.route('/qiy_nodes/<node_name>/action_messages')
 def qiy_nodes_action_messages(node_name):
     info("qiy_nodes_action_messages({})".format(node_name))
 
@@ -1276,7 +1276,7 @@ def qiy_nodes_action_messages(node_name):
 """.format(node_name,lis)
 
 
-@app.route('/qiy_nodes/<node_name>/action_messages/relay_options/get/<path:b64_relay_option>')
+@application.route('/qiy_nodes/<node_name>/action_messages/relay_options/get/<path:b64_relay_option>')
 def qiy_nodes_action_messages_relay_options_get(node_name,b64_relay_option):
     info("qiy_nodes_action_messages_relay_options_get({},{})".format(node_name,b64_relay_option))
 
@@ -1305,7 +1305,7 @@ Relay option: {1}
            s)
 
 
-@app.route('/qiy_nodes/<node_name>/connect')
+@application.route('/qiy_nodes/<node_name>/connect')
 def qiy_nodes_connect(node_name):
     info("{}".format(node_name))
 
@@ -1323,7 +1323,7 @@ def qiy_nodes_connect(node_name):
 
 """.format(node_name)
 
-@app.route('/qiy_nodes/<node_name>/connect_using_connect_token/connect_token')
+@application.route('/qiy_nodes/<node_name>/connect_using_connect_token/connect_token')
 def qiy_nodes_connect_using_connect_token_connect_token(node_name):
     info("{}".format(node_name))
 
@@ -1358,7 +1358,7 @@ connect_token: {1}
     )
 
 
-@app.route('/qiy_nodes/<node_name>/connect_using_connect_token/home')
+@application.route('/qiy_nodes/<node_name>/connect_using_connect_token/home')
 def qiy_nodes_connect_using_connect_token(node_name):
     info("{}".format(node_name))
 
@@ -1387,7 +1387,7 @@ def qiy_nodes_connect_using_connect_token(node_name):
     )
 
 
-@app.route('/qiy_nodes/<node_name>/connect_with_node')
+@application.route('/qiy_nodes/<node_name>/connect_with_node')
 def qiy_nodes_connect_with_node(node_name):
     info("{}".format(node_name))
 
@@ -1419,7 +1419,7 @@ def qiy_nodes_connect_with_node(node_name):
 """.format(node_name,lis)
 
 
-@app.route('/qiy_nodes/<node_name>/connect_with_other_node/<other_node_name>')
+@application.route('/qiy_nodes/<node_name>/connect_with_other_node/<other_node_name>')
 def qiy_nodes_connect_with_other_node(node_name,other_node_name):
     info("{} {}".format(node_name,other_node_name))
 
@@ -1439,7 +1439,7 @@ def qiy_nodes_connect_with_other_node(node_name,other_node_name):
 """.format(node_name,other_node_name)
 
 
-@app.route('/qiy_nodes/<node_name>/connect_with_other_node/<other_node_name>/with_new_connect_token/as_consumer')
+@application.route('/qiy_nodes/<node_name>/connect_with_other_node/<other_node_name>/with_new_connect_token/as_consumer')
 def qiy_nodes_connect_with_other_node_with_new_connect_token_as_consumer(node_name,other_node_name):
     info("{} {}".format(node_name,other_node_name))
 
@@ -1481,7 +1481,7 @@ Node {0} has sent {1} a connect request with token:
            )
 
 
-@app.route('/qiy_nodes/<node_name>/connect_with_other_node/<other_node_name>/with_new_connect_token/as_producer')
+@application.route('/qiy_nodes/<node_name>/connect_with_other_node/<other_node_name>/with_new_connect_token/as_producer')
 def qiy_nodes_connect_with_other_node_with_new_connect_token_as_producer(node_name,other_node_name):
     info("{} {}".format(node_name,other_node_name))
 
@@ -1523,7 +1523,7 @@ Node {1} has sent {0} a connect request with token:
            )
 
 
-@app.route('/qiy_nodes/<node_name>/connected_nodes')
+@application.route('/qiy_nodes/<node_name>/connected_nodes')
 def qiy_nodes_connected_nodes(node_name):
     info("{}".format(node_name))
 
@@ -1567,7 +1567,7 @@ def qiy_nodes_connections_json(node_name):
     return sorted_connections
 
 
-@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>')
+@application.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>')
 def qiy_nodes_connection(node_name,ub_connection_url):
     info("{} {}".format(node_name,ub_connection_url))
 
@@ -1617,7 +1617,7 @@ connection_url: {1}
            )
 
 
-@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/delete')
+@application.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/delete')
 def qiy_nodes_connection_delete(node_name,ub_connection_url):
     info("{} {}".format(node_name,ub_connection_url))
 
@@ -1649,7 +1649,7 @@ connection_url: {1}
            )
 
 
-@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feed/<feed_id>/access/encrypted')
+@application.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feed/<feed_id>/access/encrypted')
 def qiy_nodes_connection_feed_access_encrypted(node_name,ub_connection_url,feed_id):
     info("{} {}".format(node_name,ub_connection_url,feed_id))
 
@@ -1691,7 +1691,7 @@ feed_id: {2}
            )
 
 
-@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feed/<feed_id>/access/unencrypted')
+@application.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feed/<feed_id>/access/unencrypted')
 def qiy_nodes_connection_feed_access_unencrypted(node_name,ub_connection_url,feed_id):
     info("{} {}".format(node_name,ub_connection_url,feed_id))
 
@@ -1727,7 +1727,7 @@ feed_id: {2}
            )
 
 
-@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feed/<feed_id>/home')
+@application.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feed/<feed_id>/home')
 def qiy_nodes_connection_feed_home(node_name,ub_connection_url,feed_id):
     info("{} {}".format(node_name,ub_connection_url,feed_id))
 
@@ -1763,7 +1763,7 @@ feed_id: {2}
            )
 
 
-@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feeds')
+@application.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feeds')
 def qiy_nodes_connection_feeds(node_name,ub_connection_url):
     info("{} {}".format(node_name,ub_connection_url))
 
@@ -1790,7 +1790,7 @@ connection_url: {1}
            )
 
 
-@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feeds/list')
+@application.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feeds/list')
 def qiy_nodes_connection_feeds_list(node_name,ub_connection_url):
     info("{} {}".format(node_name,ub_connection_url))
 
@@ -1831,7 +1831,7 @@ connection_url: {1}
            )
 
 
-@app.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feeds/request')
+@application.route('/qiy_nodes/<node_name>/connection/<ub_connection_url>/feeds/request')
 def qiy_nodes_connection_feeds_request(node_name,ub_connection_url):
     info("{} {}".format(node_name,ub_connection_url))
 
@@ -1856,7 +1856,7 @@ tbd
            )
 
 
-@app.route('/qiy_nodes/<node_name>/connections')
+@application.route('/qiy_nodes/<node_name>/connections')
 def qiy_nodes_connections(node_name):
     info("qiy_nodes_connections({})".format(node_name))
 
@@ -1917,7 +1917,7 @@ def qiy_nodes_connections_references_json(node_name):
 
     return connections_references
 
-@app.route('/qiy_nodes/<node_name>/connections/references')
+@application.route('/qiy_nodes/<node_name>/connections/references')
 def qiy_nodes_connections_references(node_name):
     info("qiy_nodes_connections({})".format(node_name))
 
@@ -1956,7 +1956,7 @@ def qiy_nodes_connect_tokens_json(node_name):
 
     return sorted_connection_tokens
 
-@app.route('/qiy_nodes/<node_name>/connect_tokens')
+@application.route('/qiy_nodes/<node_name>/connect_tokens')
 def qiy_nodes_connect_tokens(node_name):
     info("qiy_nodes_connect_tokens({})".format(node_name))
 
@@ -1983,7 +1983,7 @@ def qiy_nodes_connect_tokens(node_name):
 """.format(node_name,dumps(connection_tokens,indent=2),
            dumps(new_connect_token))
 
-@app.route('/qiy_nodes/<node_name>/consume_connect_token')
+@application.route('/qiy_nodes/<node_name>/consume_connect_token')
 def qiy_nodes_consume_connect_token(node_name):
     info("qiy_nodes_consume_connect_token({})".format(node_name))
 
@@ -1997,7 +1997,7 @@ def qiy_nodes_consume_connect_token(node_name):
 
 """.format(node_name,"mgd_dev2")
 
-@app.route('/qiy_nodes/<node_name>/consume_connect_token/of/<path:producer>')
+@application.route('/qiy_nodes/<node_name>/consume_connect_token/of/<path:producer>')
 def qiy_nodes_consume_connect_token_of(node_name,producer):
     info("qiy_nodes_consume_connect_token_of({},{})".format(node_name,producer))
 
@@ -2027,7 +2027,7 @@ def qiy_nodes_consume_connect_token_of(node_name,producer):
     return page
 
 
-@app.route('/qiy_nodes/<node_name>/consume_connect_token/value/<path:b64_connect_token>')
+@application.route('/qiy_nodes/<node_name>/consume_connect_token/value/<path:b64_connect_token>')
 def qiy_nodes_consume_connect_token_connect_token_value(node_name,b64_connect_token):
     info("qiy_nodes_consume_connect_token_connect_token_value({},{})".format(node_name,b64_connect_token))
 
@@ -2053,7 +2053,7 @@ headers: {3}
 """.format(node_name,connect_token_s,r.status_code,r.headers)
     return page
 
-@app.route('/qiy_nodes/<node_name>/event_callback_addresses')
+@application.route('/qiy_nodes/<node_name>/event_callback_addresses')
 def qiy_nodes_event_callback_addresses(node_name):
     info("{}".format(node_name))
 
@@ -2075,7 +2075,7 @@ def qiy_nodes_event_callback_addresses(node_name):
 
 """.format(node_name,urls)
 
-@app.route('/qiy_nodes/<node_name>/events')
+@application.route('/qiy_nodes/<node_name>/events')
 def qiy_nodes_events(node_name):
     info("qiy_nodes_events({})".format(node_name))
     return """
@@ -2115,7 +2115,7 @@ catch(error) {{
 """.format(node_name)
 
 
-@app.route('/qiy_nodes/<node_name>/events/source')
+@application.route('/qiy_nodes/<node_name>/events/source')
 def qiy_nodes_events_source(node_name):
     info("{0}".format(node_name))
 
@@ -2174,7 +2174,7 @@ def qiy_nodes_events_source(node_name):
         mimetype="text/event-stream")
 
 
-@app.route('/qiy_nodes/<node_name>/feed/<feed_id>/access/encrypted')
+@application.route('/qiy_nodes/<node_name>/feed/<feed_id>/access/encrypted')
 def qiy_nodes_feed_access_encrypted(node_name,feed_id):
     info("{}, {}".format(node_name,feed_id))
 
@@ -2206,7 +2206,7 @@ def qiy_nodes_feed_access_encrypted(node_name,feed_id):
     )
 
 
-@app.route('/qiy_nodes/<node_name>/feed/<feed_id>/access/unencrypted')
+@application.route('/qiy_nodes/<node_name>/feed/<feed_id>/access/unencrypted')
 def qiy_nodes_feed_access_unencrypted(node_name,feed_id):
     info("{}, {}".format(node_name,feed_id))
 
@@ -2230,7 +2230,7 @@ def qiy_nodes_feed_access_unencrypted(node_name,feed_id):
     )
 
 
-@app.route('/qiy_nodes/<node_name>/feed/<feed_id>/home')
+@application.route('/qiy_nodes/<node_name>/feed/<feed_id>/home')
 def qiy_nodes_feed_home(node_name,feed_id):
     info("{}, {}".format(node_name,feed_id))
 
@@ -2259,7 +2259,7 @@ def qiy_nodes_feed_home(node_name,feed_id):
 
 
 
-@app.route('/qiy_nodes/<node_name>/feeds')
+@application.route('/qiy_nodes/<node_name>/feeds')
 def qiy_nodes_feeds(node_name):
     info("qiy_nodes_feeds({})".format(node_name))
     return """
@@ -2275,7 +2275,7 @@ def qiy_nodes_feeds(node_name):
 """.format(node_name)
 
 
-@app.route('/qiy_nodes/<node_name>/feeds/list')
+@application.route('/qiy_nodes/<node_name>/feeds/list')
 def qiy_nodes_feeds_list(node_name):
     info("{}".format(node_name))
 
@@ -2304,7 +2304,7 @@ def qiy_nodes_feeds_list(node_name):
     return page
 
 
-@app.route('/qiy_nodes/<node_name>/feeds/list/raw')
+@application.route('/qiy_nodes/<node_name>/feeds/list/raw')
 def qiy_nodes_feeds_list_raw(node_name):
     info("{}".format(node_name))
 
@@ -2312,7 +2312,7 @@ def qiy_nodes_feeds_list_raw(node_name):
     
     return dumps(ids,indent=2)
 
-@app.route('/qiy_nodes/<node_name>/feeds/request')
+@application.route('/qiy_nodes/<node_name>/feeds/request')
 def qiy_nodes_feeds_request(node_name):
     info("qiy_nodes_feeds_request({})".format(node_name))
 
@@ -2343,7 +2343,7 @@ def qiy_nodes_feeds_request(node_name):
     return page
 
 
-@app.route('/qiy_nodes/<node_name>/feeds/request/mbox/<path:b64_mbox_url>')
+@application.route('/qiy_nodes/<node_name>/feeds/request/mbox/<path:b64_mbox_url>')
 def qiy_nodes_feeds_request_mbox(node_name,b64_mbox_url,
                                  operationTypeUrl="https://github.com/qiyfoundation/fiKks/tree/master/schema/v1"
                                  ):
@@ -2382,7 +2382,7 @@ def qiy_nodes_feeds_request_mbox(node_name,b64_mbox_url,
     return page
 
 
-@app.route('/qiy_nodes/<node_name>/messages/since/<path:minutes>')
+@application.route('/qiy_nodes/<node_name>/messages/since/<path:minutes>')
 def qiy_nodes_messages(node_name,minutes):
     info("qiy_nodes_messages({})".format(node_name))
 
@@ -2407,7 +2407,7 @@ def qiy_nodes_messages(node_name,minutes):
 
 """.format(node_name,dumps(messages,indent=2))
 
-@app.route('/qiy_nodes/<node_name>/pid/<ub_pid>/<ub_connection>')
+@application.route('/qiy_nodes/<node_name>/pid/<ub_pid>/<ub_connection>')
 def qiy_nodes_pid(node_name,ub_pid,ub_connection):
     info("{} {} {}".format(node_name,ub_pid,ub_connection))
 
@@ -2449,7 +2449,7 @@ def qiy_nodes_pids_json(node_name):
     sorted_pids = OrderedDict(sorted(pids.items(), key=lambda t: t[0],reverse=True))
     return sorted_pids
 
-@app.route('/qiy_nodes/<node_name>/pids')
+@application.route('/qiy_nodes/<node_name>/pids')
 def qiy_nodes_pids(node_name):
     info("{}".format(node_name))
 
@@ -2499,8 +2499,8 @@ def qiy_nodes_pids(node_name):
 """.format(node_name,rows)
 
 
-#@app.route('/qiy_nodes/<path:node_name>/pids/<ub_pid>/references/<ub_references_url>')
-@app.route('/qiy_nodes/<node_name>/pids/references/<ub_references_url>')
+#@application.route('/qiy_nodes/<path:node_name>/pids/<ub_pid>/references/<ub_references_url>')
+@application.route('/qiy_nodes/<node_name>/pids/references/<ub_references_url>')
 def qiy_nodes_pids_references(node_name,ub_references_url):
     info("qiy_nodes_pids_references({},{})".format(node_name,ub_references_url))
     print(ub_references_url)
@@ -2543,8 +2543,8 @@ References
 """.format(node_name,references_url,result)
 
 
-#@app.route('/qiy_nodes/<path:node_name>/pids/<ub_pid>/references/<ub_references_url>')
-@app.route('/qiy_nodes/<node_name>/pids/refs_feeds/<ub_references_url>/<feed_id>')
+#@application.route('/qiy_nodes/<path:node_name>/pids/<ub_pid>/references/<ub_references_url>')
+@application.route('/qiy_nodes/<node_name>/pids/refs_feeds/<ub_references_url>/<feed_id>')
 def qiy_nodes_pids_references_feeds(node_name,ub_references_url,feed_id):
     info("qiy_nodes_pids_references_feeds({},{},{})".format(node_name,ub_references_url,feed_id))
 
@@ -2587,7 +2587,7 @@ Feed {2}
 """.format(node_name,references_url,feed_id,result)
 
 
-@app.route('/qiy_nodes/<node_name>/proxy/<path:path>',methods=['get'])
+@application.route('/qiy_nodes/<node_name>/proxy/<path:path>',methods=['get'])
 def qiy_nodes_proxy(node_name,path):
     info("{}".format(node_name,path))
 
@@ -2685,7 +2685,7 @@ def qiy_nodes_proxy(node_name,path):
     return response
 
 
-@app.route('/qiy_nodes/<node_name>/redirect_to_eformulieren/<path:u_url>')
+@application.route('/qiy_nodes/<node_name>/redirect_to_eformulieren/<path:u_url>')
 def qiy_nodes_redirect_to_eformulieren(node_name,u_url):
     info("qiy_nodes_redirect_to_eformulieren({})".format(node_name,u_url))
 
@@ -2721,7 +2721,7 @@ click here to redirect: <a href="{1}">{1}</a>
 """.format(node_name,redirect_url)
 
 
-@app.route('/qiy_nodes/<node_name>/service_catalogue')
+@application.route('/qiy_nodes/<node_name>/service_catalogue')
 def qiy_nodes_service_catalogue(node_name):
     info("{}".format(node_name))
 
@@ -2740,7 +2740,7 @@ def qiy_nodes_service_catalogue(node_name):
     
     return page
 
-@app.route('/service_types/<ub_service_type>')
+@application.route('/service_types/<ub_service_type>')
 def qtt_service_types(ub_service_type):
     info("{}".format(ub_service_type))
 
@@ -2825,7 +2825,7 @@ def qtt_service_types(ub_service_type):
            )
 
 
-@app.route('/service_types/<ub_service_type>/data_providers/<data_provider>/home')
+@application.route('/service_types/<ub_service_type>/data_providers/<data_provider>/home')
 def qtt_service_types_data_providers(ub_service_type,data_provider):
     info("{}".format(ub_service_type,data_provider))
 
@@ -2931,7 +2931,7 @@ def qtt_service_types_data_providers(ub_service_type,data_provider):
            )
 
 
-@app.route('/service_types/<ub_service_type>/feeds/list')
+@application.route('/service_types/<ub_service_type>/feeds/list')
 def qtt_service_types_feeds_list(ub_service_type):
     info("{}".format(ub_service_type))
 
@@ -2978,7 +2978,7 @@ def qtt_service_types_feeds_list(ub_service_type):
            )
 
 
-@app.route('/service_types/<ub_service_type>/orchestrators/<orchestrator>')
+@application.route('/service_types/<ub_service_type>/orchestrators/<orchestrator>')
 def qtt_service_types_orchestrators(ub_service_type,orchestrator):
     info("{}".format(ub_service_type,orchestrator))
 
@@ -3000,7 +3000,7 @@ tbd
            )
 
 
-@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/home')
+@application.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/home')
 def qtt_service_types_relying_parties(ub_service_type,relying_party):
     info("{}".format(ub_service_type,relying_party))
 
@@ -3057,7 +3057,7 @@ def qtt_service_types_relying_parties(ub_service_type,relying_party):
     )
 
 
-@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/feeds/<ub_feed_id>/home')
+@application.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/feeds/<ub_feed_id>/home')
 def qtt_service_types_relying_parties_feeds_home(ub_service_type,relying_party,ub_feed_id):
     info("{}".format(ub_service_type,relying_party,ub_feed_id))
 
@@ -3083,7 +3083,7 @@ tbd
            )
 
 
-@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/orchestrators/<orchestrator>/connected')
+@application.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/orchestrators/<orchestrator>/connected')
 def qtt_service_types_relying_parties_orchestrators_connected(ub_service_type,relying_party,orchestrator):
     info("{}".format(ub_service_type,relying_party,orchestrator))
 
@@ -3109,7 +3109,7 @@ def qtt_service_types_relying_parties_orchestrators_connected(ub_service_type,re
            )
 
 
-@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/orchestrators/<orchestrator>/feed_request')
+@application.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/orchestrators/<orchestrator>/feed_request')
 def qtt_service_types_relying_parties_orchestrators_feed_request(ub_service_type,relying_party,orchestrator):
     info("{}".format(ub_service_type,relying_party,orchestrator))
 
@@ -3146,7 +3146,7 @@ def qtt_service_types_relying_parties_orchestrators_feed_request(ub_service_type
            )
 
 
-@app.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/orchestrators/<orchestrator>/not_connected')
+@application.route('/service_types/<ub_service_type>/relying_parties/<relying_party>/orchestrators/<orchestrator>/not_connected')
 def qtt_service_types_relying_parties_orchestrators_not_connected(ub_service_type,relying_party,orchestrator):
     info("{}".format(ub_service_type,relying_party,orchestrator))
 
@@ -3171,7 +3171,7 @@ tbd
            )
 
 
-@app.route('/service_types_create',methods=['get'])
+@application.route('/service_types_create',methods=['get'])
 def qtt_service_types_create():
     info("start")
 
@@ -3270,7 +3270,7 @@ report:<br>
     )
 
 
-@app.route('/connection_url_event_source/<path:webhook_url>')
+@application.route('/connection_url_event_source/<path:webhook_url>')
 def connection_url_event_source(webhook_url):
     warning("connection_url_event_source() started - deprecated")
     def gen() -> Iterator[str]:
