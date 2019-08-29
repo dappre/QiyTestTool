@@ -621,7 +621,7 @@ def node_feed_ids_list(
             i,
             service_type_url=service_type_url,
             target=target,
-            )
+            ).json()
         for j in feeds:
             feed_ids[i].append(j)
 
@@ -641,7 +641,7 @@ def node_feed_ids(node_name,
                    query_parameters=query_parameters,
                    target=target,
                    )
-    return r.json()
+    return r
 
 def node_feed_access_encrypted(
     node_name,
@@ -2279,7 +2279,10 @@ def qiy_nodes_feeds(node_name):
 def qiy_nodes_feeds_list(node_name):
     info("{}".format(node_name))
 
-    feed_ids=node_feed_ids(node_name,target=target)
+    r=node_feed_ids(node_name,target=target)
+    feed_ids=[]
+    for i in r.json():
+        feed_ids.append(i)
 
     lis=""
     for feed_id in feed_ids:
@@ -2308,9 +2311,25 @@ def qiy_nodes_feeds_list(node_name):
 def qiy_nodes_feeds_list_raw(node_name):
     info("{}".format(node_name))
 
-    ids=node_feed_ids(node_name)
+    r=node_feed_ids(node_name,target=target)
+
+    html="""
+<pre>
+{}
+</pre>
+    """.format(escape(dumps(r.json(),indent=2)))
     
-    return dumps(ids,indent=2)
+    page="""
+<h1>Test Node {0}</h1>
+<h2>Feeds - list - raw</h2>
+
+{1}
+
+<a href="/qiy_nodes/{0}/feeds">Up</a>
+
+""".format(node_name,html)
+    
+    return page
 
 @app.route('/qiy_nodes/<node_name>/feeds/request')
 def qiy_nodes_feeds_request(node_name):
