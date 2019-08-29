@@ -1,6 +1,14 @@
 import os
 import mod_wsgi.server
 
+# Create data directory if required
+datapath = os.getenv('QIY_CREDENTIALS')
+if not os.path.isdir(datapath):
+    os.makedirs(datapath)
+    print("Data dir created")
+else:
+    print("Data dir exists")
+
 mod_wsgi.server.start(
   '--log-to-terminal',
   '--port', '8080',
