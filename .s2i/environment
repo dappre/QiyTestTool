@@ -1,0 +1,3 @@
+APP_FILE=QiyTestTool/site/flask_app.py
+#APP_MODULE=wsgi:app
+#APP_CONFIG=gunicorn.conf
