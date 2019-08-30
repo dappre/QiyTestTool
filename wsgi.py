@@ -1127,6 +1127,35 @@ def access_feed(data_provider_name,
     return feed_contents
 
 
+@application.route('/qiy_nodes/<node_name>/delete', methods=['post'])
+def qiy_nodes_delete(node_name: str):
+    """
+    Will delete the node indicated by the given configuration
+    :param node_name: the name of the node
+    :return: the response of the delete request on the node (for now, TODO)
+    """
+    r = node_request(operation='delete', node_name=node_name, endpoint_name='self', target=target)
+    if r.status_code == 204:
+        report = "The node no longer exists"
+    else:
+        report = "There was an error deleting the node"
+
+    return """
+<h1>Qiy node</h1>
+
+node name: {}<br>
+<p>
+
+report:<br>
+<pre>{}</pre>
+
+<p><a href="/">Up</a>
+""".format(
+        node_name,
+        report,
+    )
+
+
 @application.route('/qiy_nodes_create', methods=['get'])
 def qiy_nodes_create():
     info("start")
@@ -1171,6 +1200,8 @@ def qiy_nodes(node_name):
 
     if not node_is_accessible(node_name=node_name, target=target):
         body = "NB: The node is not accessible: please consider removing it's Qiy Node Credential."
+        # TODO: [FV 20190830] Freek, kun je een re-create knop maken en een delete knop? bij de re-create de node
+        # opnieuw maken met dezelfde configuaratie, bij delete 'it's Qiy Node Credential' verwijderen
     else:
         body = """
 <ul>
@@ -1188,6 +1219,7 @@ def qiy_nodes(node_name):
 <li><a href="/qiy_nodes/{0}/proxy/example_request">Proxy (example request)</a>
 <li><a href="/qiy_nodes/{0}/pids">Pids</a>
 <li><a href="/qiy_nodes/{0}/redirect_to_eformulieren/{1}">Redirect to Lost Lemon eFormulieren</a>
+<li><form action="/qiy_nodes/{0}/delete" method="post"><input type="submit" value="Delete node" onclick="return confirm('are you sure')"></form>
 </ul>
 """.format(node_name, u_redirect_url)
 
