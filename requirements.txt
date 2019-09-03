@@ -1,7 +1,7 @@
-QiyNodeLib
+git+https://github.com/digital-me/QiyNodeLib.git@master#egg=QiyNodeLib
+mod_wsgi
 Flask
 flask_sse
 pymongo
 pytest
 python-dotenv
-
