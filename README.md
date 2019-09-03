@@ -42,7 +42,7 @@ Enter the following commands to start the server:
 
 ```
 cd ~/QiyTestTool
-export FLASK_APP=QiyTestTool/site/flask_app.py
+export FLASK_APP=wsgi.py
 python3 -m flask run
 ```
 

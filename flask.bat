@@ -1,4 +1,4 @@
-set FLASK_APP=QiyTestTool\site\flask_app.py
+set FLASK_APP=wsgi.py
 set TARGET=dev2
 
 REM Uncomment the next line if the URLLIB has been fixed as specified in https://github.com/psf/requests/issues/4248#issuecomment-429188281:
