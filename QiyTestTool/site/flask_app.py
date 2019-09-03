@@ -35,9 +35,11 @@ from os.path import join
 from pathlib import Path
 from queue import Queue
 from queue import Empty
+from QiyNodeLib.QiyNodeLib import node_auth_header
 from QiyNodeLib.QiyNodeLib import node_create
 from QiyNodeLib.QiyNodeLib import node_connect
 from QiyNodeLib.QiyNodeLib import node_connect_token__create
+from QiyNodeLib.QiyNodeLib import node_endpoint
 from QiyNodeLib.QiyNodeLib import node_get_messages
 from QiyNodeLib.QiyNodeLib import node_request
 from QiyNodeLib.QiyNodeLib import node_transport_password
@@ -62,6 +64,7 @@ from urllib.parse import urlparse
 import flask_sse
 import pymongo
 import random
+import requests
 import string
 import sys
 
@@ -618,7 +621,7 @@ def node_feed_ids_list(
             i,
             service_type_url=service_type_url,
             target=target,
-            )
+            ).json()
         for j in feeds:
             feed_ids[i].append(j)
 
@@ -638,7 +641,7 @@ def node_feed_ids(node_name,
                    query_parameters=query_parameters,
                    target=target,
                    )
-    return r.json()
+    return r
 
 def node_feed_access_encrypted(
     node_name,
@@ -952,6 +955,19 @@ def request_to_str(r,r_is_request=False):
 
     return s
 
+def response_to_str(response):
+    s="-------------------------------------------------------------------------------------------\n"
+    s=s+"Response:\n"
+    s=s+str(response.status_code)+"\n"
+    headers=response.headers
+    for header in headers:
+        s=s+"{0}: {1}\n".format(header,headers[header])
+    s=s+"\n"
+    s=s+response.text
+    s=s+"\n-------------------------------------------------------------------------------------------\n"
+
+    return s
+
 def ub_decode(ub):
     bu=unquote(ub)
     bu=b64decode(bu).decode()
@@ -982,6 +998,8 @@ def data_provider_service_type_service_endpoint_feeds_callback(data_provider_nam
 @app.route('/data_provider/<data_provider_name>/service_type/<ub_service_type_url>/service_endpoint/feeds/callback/resolve', methods=['get','post'])
 def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_provider_name,ub_service_type_url):
     info("{} {}".format(data_provider_name,ub_service_type_url))
+
+    info("incoming request: '{}'".format(request_to_str(request,r_is_request=True)))
 
     service_type_url=ub_decode(ub_service_type_url)
 
@@ -2261,7 +2279,10 @@ def qiy_nodes_feeds(node_name):
 def qiy_nodes_feeds_list(node_name):
     info("{}".format(node_name))
 
-    feed_ids=node_feed_ids(node_name,target=target)
+    r=node_feed_ids(node_name,target=target)
+    feed_ids=[]
+    for i in r.json():
+        feed_ids.append(i)
 
     lis=""
     for feed_id in feed_ids:
@@ -2290,9 +2311,25 @@ def qiy_nodes_feeds_list(node_name):
 def qiy_nodes_feeds_list_raw(node_name):
     info("{}".format(node_name))
 
-    ids=node_feed_ids(node_name)
+    r=node_feed_ids(node_name,target=target)
 
-    return dumps(ids,indent=2)
+    html="""
+<pre>
+{}
+</pre>
+    """.format(escape(dumps(r.json(),indent=2)))
+
+    page="""
+<h1>Test Node {0}</h1>
+<h2>Feeds - list - raw</h2>
+
+{1}
+
+<a href="/qiy_nodes/{0}/feeds">Up</a>
+
+""".format(node_name,html)
+
+    return page
 
 @app.route('/qiy_nodes/<node_name>/feeds/request')
 def qiy_nodes_feeds_request(node_name):
@@ -2573,27 +2610,96 @@ Feed {2}
 def qiy_nodes_proxy(node_name,path):
     info("{}".format(node_name,path))
 
-    # Resolve endpoint
-    # .../proxy/api, /serviceCatalogue  /...
-    # Check Accept header.
+    # Return webpage for text/html requests.
+    print("request.headers: '{}'".format(request.headers))
+    accept_header=None
+    if 'Accept' in request.headers:
+        accept_header=request.headers['Accept']
+    elif 'accept' in request.headers:
+        accept_header=request.headers['accept']
+    print("accept_header: '{}'".format(accept_header))
 
-    # Return received request
-    received_request=escape(request_to_str(request,r_is_request=True))
+    received_request=request_to_str(request,r_is_request=True)
+    info(received_request)
+    received_request=escape(received_request)
 
-    html="""
-<h1>Test Node {0} Proxy</h1>
+    response=None
+    if 'text/html' in accept_header:
+        # Return received request
 
-<pre>
-{1}
-</pre>
+        html="""
+    <h1>Test Node {0} Proxy</h1>
 
-<a href="/qiy_nodes/{0}">Up</a>
+    <pre>
+    {1}
+    </pre>
 
-""".format(node_name,
-           received_request,
-           )
+    <a href="/qiy_nodes/{0}">Up</a>
 
-    response=html
+    """.format(node_name,
+               received_request,
+               )
+
+        response=Response(html)
+        response.headers['Access-Control-Allow-Origin'] = '*'
+
+    else:
+        # Forward to Qiy Trust Network
+        stream=None
+
+        node_endpoint_url=node_endpoint(target=target)
+        url=node_endpoint_url
+        if request.args:
+            url=url+"?"
+            for parameter in request.args:
+                url="{0}{1}={2}&".format(url,parameter,request.args[parameter])
+            url=url[0:len(url)-1]
+        print("url: {}''".format(url))
+        headers={}
+        ignore_headers=['Postman-Token',
+                        'Host',
+                        'X-Mock-Response-Code',
+                        'Cache-Control'
+                        #'', HIER WAS IK GEBLEVEN...
+                        ]
+        headers['Accept']='application/json'
+#        for name, value in request.headers:
+#            headers[name]=value
+        data=request.data
+
+        # Authenticate authenticated requests
+        authorization_header=None
+        if 'Authorization' in headers:
+            authorization_header=headers['Authorization']
+        elif 'authorization' in headers:
+            authorization_header=headers['authorization']
+
+        if not authorization_header is None:
+            info("Authenticating request...")
+            # For now always include transportpassword
+            headers['Authorization']=node_auth_header(data=data,node_name=node_name,target=target)
+            headers['password']=node_transport_password(node_name=node_name,target=target)
+        # Return response
+
+        methods={
+            "delete": requests.delete,
+            "get": requests.get,
+            "options": requests.options,
+            "patch": requests.patch,
+            "post": requests.post,
+            "put": requests.put,
+            }
+        method=request.method
+        method=method.lower()
+        r=methods[method](url,headers=headers,data=data,stream=stream)
+        info("Response from qtn: '{}'".format(request_to_str(r)))
+
+        mimetype=None
+        if 'Content-Type' in r.headers:
+            mimetype=r.headers['Content-Type']
+        headers={'Access-Control-Allow-Origin':'*'}
+        response=Response(r.text, headers=headers, status=r.status_code, mimetype=mimetype)
+        #info("Response to qtt client: '{}'".format(response_to_str(response)))
 
     return response
 
