@@ -2613,21 +2613,30 @@ def qiy_node_proxy_path_to_qtn_url(path=None,request=None,target=None):
     debug("'{}' '{}' '{}'".format(path,request,target))
     url=None
 
-    api_path="api"
-    fixed_api_paths=[
-        api_path
-    ]
-    dynamic_api_paths=[
-        'create'
-    ]
-    dynamic_node_paths=[
-    ]
+    qiy_api_api_path="api"
+    qiy_api_create_path='createEndpointUrl'
+    qiy_api_feeds_path='feedsEndpointUrl'
+
+    qtn_api_path="api"
+    qtn_create_path="owners"
+    qtn_feeds_path="feeds"
+
+    qtn_paths={}
+    qtn_paths[qiy_api_api_path]=qtn_api_path
+    qtn_paths[qiy_api_create_path]=qtn_create_path
+    qtn_paths[qiy_api_feeds_path]=qtn_feeds_path
+
+    qiy_api_paths={}
+    qiy_api_paths[qtn_create_path]=qiy_api_create_path
+    qiy_api_paths[qtn_feeds_path]=qiy_api_feeds_path
 
     server_url=node_endpoint(target=target).replace("api","")
     print("server_url: '{}'".format(server_url))
+
     
-    url = "{}{}".format(server_url, path)
+    url = "{}{}".format(server_url, qtn_paths[path])
     print("url: '{}'".format(url))
+    
     if request.args:
         url = url + "?"
         for parameter in request.args:
@@ -2675,6 +2684,15 @@ def qiy_nodes_proxy(node_name, path):
 
     else:
         # Forward to Qiy Trust Network
+        # Authenticate authenticated requests
+        headers=request.headers
+        qtt_authorization_header = None
+        if 'qtt_authorization' in headers:
+            qtt_authorization_header = headers['qtt_authorization']
+        if 'Qtt-Authorization' in headers:
+            qtt_authorization_header = headers['Qtt-Authorization']
+        print("qtt_authorization_header: '{}'".format(qtt_authorization_header))
+
         stream = None
 
         url=qiy_node_proxy_path_to_qtn_url(path=path,request=request,target=target)
@@ -2690,16 +2708,12 @@ def qiy_nodes_proxy(node_name, path):
         #            headers[name]=value
         data = request.data
 
-        # Authenticate authenticated requests
-        qtt_authorization_header = None
-        if 'qtt_authorization' in headers:
-            qtt_authorization_header = headers['qtt_authorization']
 
         if not qtt_authorization_header is None:
+            print("Authenticating request...")
             info("Authenticating request...")
-            # For now always include transportpassword
             headers['Authorization'] = node_auth_header(data=data, node_name=node_name, target=target)
-            headers['password'] = node_transport_password(node_name=node_name, target=target)
+            #headers['password'] = node_transport_password(node_name=node_name, target=target)
         # Return response
 
         methods = {
