@@ -927,9 +927,9 @@ def response_to_str(response):
     s = s + str(response.status_code) + "\n"
     headers = response.headers
     for header in headers:
-        s = s + "{0}: {1}\n".format(header, headers[header])
+        s = s + "{0}\n".format(header)
     s = s + "\n"
-    s = s + response.text
+    s = s + response.get_data(as_text=True)
     s = s + "\n-------------------------------------------------------------------------------------------\n"
 
     return s
@@ -2609,6 +2609,33 @@ Feed {2}
 """.format(node_name, references_url, feed_id, result)
 
 
+def qiy_node_proxy_path_to_qtn_url(path=None,request=None,target=None):
+    debug("'{}' '{}' '{}'".format(path,request,target))
+    url=None
+
+    api_path="api"
+    fixed_api_paths=[
+        api_path
+    ]
+    dynamic_api_paths=[
+        'create'
+    ]
+    dynamic_node_paths=[
+    ]
+
+    server_url=node_endpoint(target=target).replace("api","")
+    print("server_url: '{}'".format(server_url))
+    
+    url = "{}{}".format(server_url, path)
+    print("url: '{}'".format(url))
+    if request.args:
+        url = url + "?"
+        for parameter in request.args:
+            url = "{0}{1}={2}&".format(url, parameter, request.args[parameter])
+        url = url[0:len(url) - 1]
+    debug("url: {}''".format(url))
+    return url
+
 @application.route('/qiy_nodes/<node_name>/proxy/<path:path>', methods=['get'])
 def qiy_nodes_proxy(node_name, path):
     info("{}".format(node_name, path))
@@ -2649,20 +2676,13 @@ def qiy_nodes_proxy(node_name, path):
         # Forward to Qiy Trust Network
         stream = None
 
-        node_endpoint_url = node_endpoint(target=target)
-        url = node_endpoint_url
-        if request.args:
-            url = url + "?"
-            for parameter in request.args:
-                url = "{0}{1}={2}&".format(url, parameter, request.args[parameter])
-            url = url[0:len(url) - 1]
-        print("url: {}''".format(url))
+        url=qiy_node_proxy_path_to_qtn_url(path=path,request=request,target=target)
+
         headers = {}
         ignore_headers = ['Postman-Token',
                           'Host',
                           'X-Mock-Response-Code',
                           'Cache-Control'
-                          # '', HIER WAS IK GEBLEVEN...
                           ]
         headers['Accept'] = 'application/json'
         #        for name, value in request.headers:
@@ -2670,13 +2690,11 @@ def qiy_nodes_proxy(node_name, path):
         data = request.data
 
         # Authenticate authenticated requests
-        authorization_header = None
-        if 'Authorization' in headers:
-            authorization_header = headers['Authorization']
-        elif 'authorization' in headers:
-            authorization_header = headers['authorization']
+        qtt_authorization_header = None
+        if 'qtt_authorization' in headers:
+            qtt_authorization_header = headers['qtt_authorization']
 
-        if not authorization_header is None:
+        if not qtt_authorization_header is None:
             info("Authenticating request...")
             # For now always include transportpassword
             headers['Authorization'] = node_auth_header(data=data, node_name=node_name, target=target)
@@ -2701,7 +2719,7 @@ def qiy_nodes_proxy(node_name, path):
             mimetype = r.headers['Content-Type']
         headers = {'Access-Control-Allow-Origin': '*'}
         response = Response(r.text, headers=headers, status=r.status_code, mimetype=mimetype)
-        # info("Response to qtt client: '{}'".format(response_to_str(response)))
+        d_response=response_to_str(response)
 
     return response
 
