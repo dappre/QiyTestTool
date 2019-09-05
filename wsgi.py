@@ -2706,7 +2706,7 @@ def qiy_nodes_proxy(node_name, path):
         headers['Accept'] = 'application/json'
         #        for name, value in request.headers:
         #            headers[name]=value
-        data = request.data
+        data = str(request.data)
 
 
         if not qtt_authorization_header is None:
