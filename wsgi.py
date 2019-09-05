@@ -2639,6 +2639,7 @@ def qiy_node_proxy_path_to_qtn_url(path=None,request=None,target=None):
 @application.route('/qiy_nodes/<node_name>/proxy/<path:path>', methods=['get'])
 def qiy_nodes_proxy(node_name, path):
     info("{}".format(node_name, path))
+    proxy_path="qiy_nodes/{}/proxy".format(node_name)
 
     # Return webpage for text/html requests.
     print("request.headers: '{}'".format(request.headers))
@@ -2718,9 +2719,22 @@ def qiy_nodes_proxy(node_name, path):
         if 'Content-Type' in r.headers:
             mimetype = r.headers['Content-Type']
         headers = {'Access-Control-Allow-Origin': '*'}
-        response = Response(r.text, headers=headers, status=r.status_code, mimetype=mimetype)
-        d_response=response_to_str(response)
 
+        text=r.text
+
+        # replace server_url with proxy url in response json body
+        if r.headers['Content-Type'] =="application/json":
+            server_url=node_endpoint(target=target).replace("api","")
+            print("server_url: '{}'".format(server_url))
+            proxy_url="{}{}/".format(request.url_root,proxy_path)
+            print("proxy_url: '{}'".format(proxy_url))
+
+            text=text.replace(server_url,proxy_url)
+            print("text: '{}'",format(text))
+
+        response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
+        d_response=response_to_str(response)
+        
     return response
 
 
