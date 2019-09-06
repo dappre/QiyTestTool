@@ -927,9 +927,9 @@ def response_to_str(response):
     s = s + str(response.status_code) + "\n"
     headers = response.headers
     for header in headers:
-        s = s + "{0}: {1}\n".format(header, headers[header])
+        s = s + "{0}\n".format(header)
     s = s + "\n"
-    s = s + response.text
+    s = s + response.get_data(as_text=True)
     s = s + "\n-------------------------------------------------------------------------------------------\n"
 
     return s
@@ -1342,7 +1342,7 @@ def qiy_nodes_connect_using_connect_token_connect_token(node_name):
     info("{}".format(node_name))
 
     connect_token = request.args.get('connect_token')
-    print(connect_token)
+    #print(connect_token)
     connect_token = loads(connect_token)
 
     r = node_connect(
@@ -1961,7 +1961,7 @@ def qiy_nodes_connect_tokens_json(node_name):
     if r.status_code == 200:
         connect_tokens = r.json()
         info("connect_tokens: '{}'".format(dumps(connect_tokens, indent=2)))
-        print("connect_tokens: '{}'".format(dumps(connect_tokens, indent=2)))
+        #print("connect_tokens: '{}'".format(dumps(connect_tokens, indent=2)))
         for ct in connect_tokens:
             ct['created'] = datetime.utcfromtimestamp(int(ct['created']) / 1000).isoformat()
             if 'lastUsed' in ct:
@@ -2409,7 +2409,7 @@ def qiy_nodes_messages(node_name, minutes):
     info("qiy_nodes_messages({})".format(node_name))
 
     since = timegm(datetime.utcnow().timetuple()) - (int(minutes) * 60)
-    print(since, datetime.utcfromtimestamp(since))
+    #print(since, datetime.utcfromtimestamp(since))
     since = since * 1000
     messages = {}
 
@@ -2526,7 +2526,7 @@ def qiy_nodes_pids(node_name):
 @application.route('/qiy_nodes/<node_name>/pids/references/<ub_references_url>')
 def qiy_nodes_pids_references(node_name, ub_references_url):
     info("qiy_nodes_pids_references({},{})".format(node_name, ub_references_url))
-    print(ub_references_url)
+    #print(ub_references_url)
 
     b_references_url = unquote(ub_references_url)
     references_url = b64decode(b_references_url).decode()
@@ -2544,7 +2544,7 @@ def qiy_nodes_pids_references(node_name, ub_references_url):
                 feed_id = ref_connection['ref']
                 link = "/qiy_nodes/{}/pids/refs_feeds/{}/{}".format(node_name, quote_plus(ub_references_url), feed_id)
                 href = "<a href='{}'>{}</a>".format(link, feed_id)
-                print(href)
+                #print(href)
                 ref_connection['ref'] = href
 
         # Ready.
@@ -2587,7 +2587,7 @@ def qiy_nodes_pids_references_feeds(node_name, ub_references_url, feed_id):
             b64value_refs = b64value_refs_by_operation_type_url[operation_type_url]
             if len(b64value_refs) > 0:
                 b64value_ref = b64value_refs[0]
-                # print(b64value_ref)
+                #print(b64value_ref)
                 if 'value' in b64value_ref:
                     data = b64decode(b64value_ref['value'].encode()).decode()
                     data = data.replace("<", "&lt;")
@@ -2609,18 +2609,38 @@ Feed {2}
 """.format(node_name, references_url, feed_id, result)
 
 
+def qiy_node_proxy_path_to_qtn_url(path=None,request=None,target=None):
+    debug("'{}' '{}' '{}'".format(path,request,target))
+    url=None
+
+    server_url=node_endpoint(target=target).replace("api","")
+    #print("server_url: '{}'".format(server_url))
+
+    
+    url = "{}{}".format(server_url, path)
+    #print("url: '{}'".format(url))
+    
+    if request.args:
+        url = url + "?"
+        for parameter in request.args:
+            url = "{0}{1}={2}&".format(url, parameter, request.args[parameter])
+        url = url[0:len(url) - 1]
+    debug("url: {}''".format(url))
+    return url
+
 @application.route('/qiy_nodes/<node_name>/proxy/<path:path>', methods=['get'])
 def qiy_nodes_proxy(node_name, path):
     info("{}".format(node_name, path))
+    proxy_path="qiy_nodes/{}/proxy".format(node_name)
 
     # Return webpage for text/html requests.
-    print("request.headers: '{}'".format(request.headers))
+    #print("request.headers: '{}'".format(request.headers))
     accept_header = None
     if 'Accept' in request.headers:
         accept_header = request.headers['Accept']
     elif 'accept' in request.headers:
         accept_header = request.headers['accept']
-    print("accept_header: '{}'".format(accept_header))
+    #print("accept_header: '{}'".format(accept_header))
 
     received_request = request_to_str(request, r_is_request=True)
     info(received_request)
@@ -2647,40 +2667,32 @@ def qiy_nodes_proxy(node_name, path):
 
     else:
         # Forward to Qiy Trust Network
+        headers=request.headers
+
         stream = None
 
-        node_endpoint_url = node_endpoint(target=target)
-        url = node_endpoint_url
-        if request.args:
-            url = url + "?"
-            for parameter in request.args:
-                url = "{0}{1}={2}&".format(url, parameter, request.args[parameter])
-            url = url[0:len(url) - 1]
-        print("url: {}''".format(url))
+        url=qiy_node_proxy_path_to_qtn_url(path=path,request=request,target=target)
+
         headers = {}
         ignore_headers = ['Postman-Token',
                           'Host',
                           'X-Mock-Response-Code',
                           'Cache-Control'
-                          # '', HIER WAS IK GEBLEVEN...
                           ]
         headers['Accept'] = 'application/json'
         #        for name, value in request.headers:
         #            headers[name]=value
-        data = request.data
+        data = str(request.data)
 
-        # Authenticate authenticated requests
-        authorization_header = None
-        if 'Authorization' in headers:
-            authorization_header = headers['Authorization']
-        elif 'authorization' in headers:
-            authorization_header = headers['authorization']
 
-        if not authorization_header is None:
+        # Authenticate authenticated requests for all nodes but '<target>'
+        if not node_name==target:
+            #print("Authenticating request...")
             info("Authenticating request...")
-            # For now always include transportpassword
             headers['Authorization'] = node_auth_header(data=data, node_name=node_name, target=target)
-            headers['password'] = node_transport_password(node_name=node_name, target=target)
+
+            # TODO: provide transport password when required
+            #headers['password'] = node_transport_password(node_name=node_name, target=target)
         # Return response
 
         methods = {
@@ -2700,9 +2712,22 @@ def qiy_nodes_proxy(node_name, path):
         if 'Content-Type' in r.headers:
             mimetype = r.headers['Content-Type']
         headers = {'Access-Control-Allow-Origin': '*'}
-        response = Response(r.text, headers=headers, status=r.status_code, mimetype=mimetype)
-        # info("Response to qtt client: '{}'".format(response_to_str(response)))
 
+        text=r.text
+
+        # replace server_url with proxy url in response json body
+        if r.headers['Content-Type'] =="application/json":
+            server_url=node_endpoint(target=target).replace("api","")
+            #print("server_url: '{}'".format(server_url))
+            proxy_url="{}{}/".format(request.url_root,proxy_path)
+            #print("proxy_url: '{}'".format(proxy_url))
+
+            text=text.replace(server_url,proxy_url)
+            #print("text: '{}'",format(text))
+
+        response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
+        d_response=response_to_str(response)
+        
     return response
 
 
@@ -2868,7 +2893,7 @@ def qtt_service_types_data_providers(ub_service_type, data_provider):
         name = "service_endpoint_{}".format(i)
 
         if name in request.args:
-            print("{} in request.args".format(name))
+            #print("{} in request.args".format(name))
             if not request.args.get(name) == service_endpoint_description[i]:
                 update = True
                 service_endpoint_description[i] = request.args.get(name)
