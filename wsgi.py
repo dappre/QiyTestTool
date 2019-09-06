@@ -2684,14 +2684,7 @@ def qiy_nodes_proxy(node_name, path):
 
     else:
         # Forward to Qiy Trust Network
-        # Authenticate authenticated requests
         headers=request.headers
-        qtt_authorization_header = None
-        if 'qtt_authorization' in headers:
-            qtt_authorization_header = headers['qtt_authorization']
-        if 'Qtt-Authorization' in headers:
-            qtt_authorization_header = headers['Qtt-Authorization']
-        print("qtt_authorization_header: '{}'".format(qtt_authorization_header))
 
         stream = None
 
@@ -2709,7 +2702,8 @@ def qiy_nodes_proxy(node_name, path):
         data = str(request.data)
 
 
-        if not qtt_authorization_header is None:
+        # Authenticate authenticated requests for all nodes but '<target>'
+        if not node_name==target:
             print("Authenticating request...")
             info("Authenticating request...")
             headers['Authorization'] = node_auth_header(data=data, node_name=node_name, target=target)
