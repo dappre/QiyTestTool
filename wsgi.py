@@ -2628,7 +2628,7 @@ def qiy_node_proxy_path_to_qtn_url(path=None,request=None,target=None):
     debug("url: {}''".format(url))
     return url
 
-@application.route('/qiy_nodes/<node_name>/proxy/<path:path>', methods=['get'])
+@application.route('/qiy_nodes/<node_name>/proxy/<path:path>', methods=['delete','get','head','option','post','put'])
 def qiy_nodes_proxy(node_name, path):
     info("{}".format(node_name, path))
     proxy_path="qiy_nodes/{}/proxy".format(node_name)
