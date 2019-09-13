@@ -2666,7 +2666,29 @@ def qiy_nodes_proxy(node_name, path):
         response.headers['Access-Control-Allow-Origin'] = '*'
 
     else:
+        # 
         # Forward to Qiy Trust Network
+        # 
+
+        use_transport_authentication=False
+        use_app_authentication=False
+        use_user_authentication=False
+        auth=None
+
+        # Use Transport, User and App Authentication when the 'password'-header parameter has been provided.
+        if 'password' in request.headers:
+            use_transport_authentication=True
+            use_app_authentication=True
+            use_user_authentication=True
+        # Use User and App Authentication when the 'Authorization-node-QTN'-header parameter has been provided.
+        elif 'Authorization-node-QTN' in request.headers:
+            use_app_authentication=True
+            use_user_authentication=True
+        elif 'Authorization' in request.headers:
+        # Use App Authentication when the 'Authorization'-header parameter has been provided.
+            use_app_authentication=True
+            
+        
         headers=request.headers
 
         stream = None
@@ -2685,15 +2707,28 @@ def qiy_nodes_proxy(node_name, path):
         data = str(request.data)
 
 
-        # Authenticate authenticated requests for all nodes but '<target>'
-        if not node_name==target:
-            #print("Authenticating request...")
-            info("Authenticating request...")
-            headers['Authorization'] = node_auth_header(data=data, node_name=node_name, target=target)
+        if use_transport_authentication:
+            info("Transport authenticating request...")
+            headers['password'] = node_transport_password(node_name=node_name, target=target)
 
-            # TODO: provide transport password when required
-            #headers['password'] = node_transport_password(node_name=node_name, target=target)
-        # Return response
+        if use_user_authentication:
+            info("User authenticating request...")
+            headers['Authorization-node-QTN'] = node_auth_header(data=data, node_name=node_name, target=target)
+
+        if use_app_authentication:
+            info("App authenticating request...")
+            username=None
+            if 'QTT_USERNAME' in environ:
+                username=environ['QTT_USERNAME']
+            password=None
+            if 'QTT_PASSWORD' in environ:
+                password=environ['QTT_PASSWORD']
+
+            if username and password:
+                auth=(username,password)
+            else:
+                warning("Request not app authenticated; no credential provided in QTT_USERNAME and QTT_PASSWORD")
+
 
         methods = {
             "delete": requests.delete,
@@ -2705,7 +2740,8 @@ def qiy_nodes_proxy(node_name, path):
         }
         method = request.method
         method = method.lower()
-        r = methods[method](url, headers=headers, data=data, stream=stream)
+
+        r = methods[method](url, auth=auth, headers=headers, data=data, stream=stream)
         info("Response from qtn: '{}'".format(request_to_str(r)))
 
         mimetype = None
