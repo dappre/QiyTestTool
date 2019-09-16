@@ -33,6 +33,7 @@ from pathlib import Path
 from queue import Empty
 from queue import Queue
 from re import findall
+from re import match
 from shutil import move
 from threading import Event
 from threading import Thread
@@ -2668,7 +2669,7 @@ def qiy_nodes_proxy(node_name, path):
         response = Response(html)
         response.headers['Access-Control-Allow-Origin'] = '*'
 
-    elif path=="owners" and request.method=="POST":
+    elif match("(v[^/]+/)?owners",path) and request.method=="POST":
         # 
         # Redirect Node Create requests to homepage
         #
