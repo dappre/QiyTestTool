@@ -2633,7 +2633,10 @@ def qiy_nodes_proxy(node_name, path):
     info("{}".format(node_name, path))
     proxy_path="qiy_nodes/{}/proxy".format(node_name)
 
+    #
     # Return webpage for text/html requests.
+    #
+    
     #print("request.headers: '{}'".format(request.headers))
     accept_header = None
     if 'Accept' in request.headers:
@@ -2665,9 +2668,27 @@ def qiy_nodes_proxy(node_name, path):
         response = Response(html)
         response.headers['Access-Control-Allow-Origin'] = '*'
 
+    elif path=="owners" and request.method=="POST":
+        # 
+        # Redirect Node Create requests to homepage
+        #
+        info("Qiy Node Create request received - redirecting user to Qiy Test Tool")
+        body={
+            "errors": [
+                {
+                    "status": 501,
+                    "message": "Please use the Qiy Test Tool homepage to manually create new Qiy Nodes."
+                }
+            ]
+        }
+        text=dumps(body)
+        headers={"Content-Type":"application/json"}
+        mimetype="application/json"
+        response = Response(text, headers=headers, status=200, mimetype=mimetype)
+
     else:
         # 
-        # Forward to Qiy Trust Network
+        # Forward other requests to Qiy Trust Network
         # 
 
         use_transport_authentication=False
@@ -2762,7 +2783,6 @@ def qiy_nodes_proxy(node_name, path):
             #print("text: '{}'",format(text))
 
         response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
-        d_response=response_to_str(response)
         
     return response
 
