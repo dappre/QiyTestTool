@@ -2200,8 +2200,10 @@ def qiy_nodes_events_source(node_name):
             info("event: '{}'".format(event))
             sse = ServerSentEvent(event, None)
             yield sse.encode()
-            # If hosted on pythonanywhere:
-            break
+            # Set to TRUE for example if hosted on pythonanywhere:
+            if 'QTT_CLOSE_EVENTS_CONNECTION' in environ:
+                if environ['QTT_CLOSE_EVENTS_CONNECTION'] == 'TRUE':
+                    break
 
         msg = "{}: Stopping events listener...".format(listener_id)
         info(msg)
