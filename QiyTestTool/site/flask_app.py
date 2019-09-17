@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from base64 import b64decode
 from base64 import b64encode
 from calendar import timegm
@@ -67,11 +70,6 @@ import random
 import requests
 import string
 import sys
-
-print("before: environ: '{}'".format(environ))
-from dotenv import load_dotenv
-load_dotenv()
-print("after: environ: '{}'".format(environ))
 
 log_levels={}
 log_levels['DEBUG']=DEBUG
