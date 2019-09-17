@@ -68,7 +68,10 @@ import requests
 import string
 import sys
 
-
+print("before: environ: '{}'".format(environ))
+from dotenv import load_dotenv
+load_dotenv()
+print("after: environ: '{}'".format(environ))
 
 log_levels={}
 log_levels['DEBUG']=DEBUG
