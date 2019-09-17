@@ -2197,10 +2197,11 @@ def qiy_nodes_events_source(node_name):
         sse = ServerSentEvent(msg, None)
         yield sse.encode()
 
-    return Response(
+    response=Response(
         gen(node_name),
         mimetype="text/event-stream")
-
+    response.headers['X-Accel-Buffering'] = 'no'
+    return response
 
 @application.route('/qiy_nodes/<node_name>/feed/<feed_id>/access/encrypted')
 def qiy_nodes_feed_access_encrypted(node_name, feed_id):
