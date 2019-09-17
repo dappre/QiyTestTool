@@ -98,7 +98,6 @@ else:
     info("Data dir exists")
 
 
-
 info("Configuration: ok")
 debug(configuration)
 
@@ -2200,6 +2199,7 @@ def qiy_nodes_events_source(node_name):
             info("event: '{}'".format(event))
             sse = ServerSentEvent(event, None)
             yield sse.encode()
+            
             # Set to TRUE for example if hosted on pythonanywhere:
             if 'QTT_CLOSE_EVENTS_CONNECTION' in environ:
                 if environ['QTT_CLOSE_EVENTS_CONNECTION'] == 'TRUE':
@@ -2638,7 +2638,6 @@ def qiy_node_proxy_path_to_qtn_url(path=None,request=None,target=None):
     server_url=node_endpoint(target=target).replace("api","")
     #print("server_url: '{}'".format(server_url))
 
-
     url = "{}{}".format(server_url, path)
     #print("url: '{}'".format(url))
 
@@ -2691,7 +2690,8 @@ def qiy_nodes_proxy(node_name, path):
         response.headers['Access-Control-Allow-Origin'] = '*'
 
     elif match("(v[^/]+/)?owners",path) and request.method=="POST":
-        #
+
+        # 
         # Redirect Node Create requests to homepage
         #
         info("Qiy Node Create request received - redirecting user to Qiy Test Tool")
@@ -2712,7 +2712,6 @@ def qiy_nodes_proxy(node_name, path):
         #
         # Forward other requests to Qiy Trust Network
         #
-
         use_transport_authentication=False
         use_app_authentication=False
         use_user_authentication=False
@@ -2729,7 +2728,6 @@ def qiy_nodes_proxy(node_name, path):
         elif 'Authorization' in request.headers:
         # Use App Authentication when the 'Authorization'-header parameter has been provided.
             use_app_authentication=True
-
 
         #
         # Construct request to QTN

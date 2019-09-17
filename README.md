@@ -8,6 +8,7 @@ QiyTestTool (QTT) is a python web server which allows you to access one or more 
 
 This python module requires:
 1. python 3.6
+2. mod-wsgi-httpd. If needed install it with `pip install mod_wsgi-httpd`
 2. QiyNodeLib, see [installation instructions](https://github.com/digital-me/QiyNodeLib/blob/master/README.md)
 
 ## Unix
@@ -41,7 +42,7 @@ Enter the following commands to start the server:
 
 ```
 cd ~/QiyTestTool
-export FLASK_APP=QiyTestTool/site/flask_app.py
+export FLASK_APP=wsgi.py
 python3 -m flask run
 ```
 
