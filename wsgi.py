@@ -29,7 +29,9 @@ from logging import warning
 from logging import error
 from os import environ
 from os import getenv
+from os import makedirs
 from os.path import expanduser
+from os.path import isdir
 from os.path import join
 # from pyqrcode import create
 from pathlib import Path
@@ -86,6 +88,17 @@ CURRENT CONFIGURATION:
 - TARGET:               '{}'
 
 """.format(environ['TARGET'])
+
+# Create data directory if required
+datapath = getenv('QIY_CREDENTIALS')
+if not isdir(datapath):
+    makedirs(datapath)
+    info("Data dir created")
+else:
+    info("Data dir exists")
+
+
+
 info("Configuration: ok")
 debug(configuration)
 
