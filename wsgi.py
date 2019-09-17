@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import random
 import string
 from base64 import b64decode
@@ -26,7 +29,9 @@ from logging import warning
 from logging import error
 from os import environ
 from os import getenv
+from os import makedirs
 from os.path import expanduser
+from os.path import isdir
 from os.path import join
 # from pyqrcode import create
 from pathlib import Path
@@ -83,6 +88,16 @@ CURRENT CONFIGURATION:
 - TARGET:               '{}'
 
 """.format(environ['TARGET'])
+
+# Create data directory if required
+datapath = getenv('QIY_CREDENTIALS')
+if not isdir(datapath):
+    makedirs(datapath)
+    info("Data dir created")
+else:
+    info("Data dir exists")
+
+
 info("Configuration: ok")
 debug(configuration)
 
@@ -2184,6 +2199,11 @@ def qiy_nodes_events_source(node_name):
             info("event: '{}'".format(event))
             sse = ServerSentEvent(event, None)
             yield sse.encode()
+            
+            # Set to TRUE for example if hosted on pythonanywhere:
+            if 'QTT_CLOSE_EVENTS_CONNECTION' in environ:
+                if environ['QTT_CLOSE_EVENTS_CONNECTION'] == 'TRUE':
+                    break
 
         msg = "{}: Stopping events listener...".format(listener_id)
         info(msg)
@@ -2194,10 +2214,11 @@ def qiy_nodes_events_source(node_name):
         sse = ServerSentEvent(msg, None)
         yield sse.encode()
 
-    return Response(
+    response=Response(
         gen(node_name),
         mimetype="text/event-stream")
-
+    response.headers['X-Accel-Buffering'] = 'no'
+    return response
 
 @application.route('/qiy_nodes/<node_name>/feed/<feed_id>/access/encrypted')
 def qiy_nodes_feed_access_encrypted(node_name, feed_id):
@@ -2617,10 +2638,9 @@ def qiy_node_proxy_path_to_qtn_url(path=None,request=None,target=None):
     server_url=node_endpoint(target=target).replace("api","")
     #print("server_url: '{}'".format(server_url))
 
-    
     url = "{}{}".format(server_url, path)
     #print("url: '{}'".format(url))
-    
+
     if request.args:
         url = url + "?"
         for parameter in request.args:
@@ -2637,7 +2657,7 @@ def qiy_nodes_proxy(node_name, path):
     #
     # Return webpage for text/html requests.
     #
-    
+
     #print("request.headers: '{}'".format(request.headers))
     accept_header = None
     if 'Accept' in request.headers:
@@ -2670,6 +2690,7 @@ def qiy_nodes_proxy(node_name, path):
         response.headers['Access-Control-Allow-Origin'] = '*'
 
     elif match("(v[^/]+/)?owners",path) and request.method=="POST":
+
         # 
         # Redirect Node Create requests to homepage
         #
@@ -2688,10 +2709,9 @@ def qiy_nodes_proxy(node_name, path):
         response = Response(text, headers=headers, status=200, mimetype=mimetype)
 
     else:
-        # 
+        #
         # Forward other requests to Qiy Trust Network
-        # 
-
+        #
         use_transport_authentication=False
         use_app_authentication=False
         use_user_authentication=False
@@ -2708,7 +2728,6 @@ def qiy_nodes_proxy(node_name, path):
         elif 'Authorization' in request.headers:
         # Use App Authentication when the 'Authorization'-header parameter has been provided.
             use_app_authentication=True
-            
 
         #
         # Construct request to QTN
@@ -2719,7 +2738,7 @@ def qiy_nodes_proxy(node_name, path):
         stream = None
         headers = {}
         headers['Accept'] = 'application/json'
-        
+
         url=qiy_node_proxy_path_to_qtn_url(path=path,request=request,target=target)
 
         text=None
@@ -2794,7 +2813,7 @@ def qiy_nodes_proxy(node_name, path):
             #print("text: '{}'",format(text))
 
         response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
-        
+
     return response
 
 
@@ -3005,7 +3024,7 @@ def qtt_service_types_data_providers(ub_service_type, data_provider):
     service_description_form = """
 <form action="{}" method="get">
     <table>
-        {}        
+        {}
     </table>
     <input type="submit" value="Submit">
 </form>
