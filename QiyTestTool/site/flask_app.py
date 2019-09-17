@@ -2187,6 +2187,8 @@ def qiy_nodes_events_source(node_name):
             info("event: '{}'".format(event))
             sse = ServerSentEvent(event, None)
             yield sse.encode()
+            # If hosted on pythonanywhere:
+            break
 
         msg = "{}: Stopping events listener...".format(listener_id)
         info(msg)
@@ -2621,10 +2623,10 @@ def qiy_node_proxy_path_to_qtn_url(path=None,request=None,target=None):
     server_url=node_endpoint(target=target).replace("api","")
     #print("server_url: '{}'".format(server_url))
 
-    
+
     url = "{}{}".format(server_url, path)
     #print("url: '{}'".format(url))
-    
+
     if request.args:
         url = url + "?"
         for parameter in request.args:
@@ -2641,7 +2643,7 @@ def qiy_nodes_proxy(node_name, path):
     #
     # Return webpage for text/html requests.
     #
-    
+
     #print("request.headers: '{}'".format(request.headers))
     accept_header = None
     if 'Accept' in request.headers:
@@ -2674,7 +2676,7 @@ def qiy_nodes_proxy(node_name, path):
         response.headers['Access-Control-Allow-Origin'] = '*'
 
     elif match("(v[^/]+/)?owners",path) and request.method=="POST":
-        # 
+        #
         # Redirect Node Create requests to homepage
         #
         info("Qiy Node Create request received - redirecting user to Qiy Test Tool")
@@ -2692,9 +2694,9 @@ def qiy_nodes_proxy(node_name, path):
         response = Response(text, headers=headers, status=200, mimetype=mimetype)
 
     else:
-        # 
+        #
         # Forward other requests to Qiy Trust Network
-        # 
+        #
 
         use_transport_authentication=False
         use_app_authentication=False
@@ -2712,7 +2714,7 @@ def qiy_nodes_proxy(node_name, path):
         elif 'Authorization' in request.headers:
         # Use App Authentication when the 'Authorization'-header parameter has been provided.
             use_app_authentication=True
-            
+
 
         #
         # Construct request to QTN
@@ -2723,7 +2725,7 @@ def qiy_nodes_proxy(node_name, path):
         stream = None
         headers = {}
         headers['Accept'] = 'application/json'
-        
+
         url=qiy_node_proxy_path_to_qtn_url(path=path,request=request,target=target)
 
         text=None
@@ -2798,7 +2800,7 @@ def qiy_nodes_proxy(node_name, path):
             #print("text: '{}'",format(text))
 
         response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
-        
+
     return response
 
 
@@ -3009,7 +3011,7 @@ def qtt_service_types_data_providers(ub_service_type, data_provider):
     service_description_form = """
 <form action="{}" method="get">
     <table>
-        {}        
+        {}
     </table>
     <input type="submit" value="Submit">
 </form>
