@@ -2695,7 +2695,6 @@ def qiy_nodes_proxy(node_name, path):
         use_transport_authentication=False
         use_app_authentication=False
         use_user_authentication=False
-        auth=None
 
         # Use Transport, User and App Authentication when the 'password'-header parameter has been provided.
         if 'password' in request.headers:
@@ -2710,41 +2709,48 @@ def qiy_nodes_proxy(node_name, path):
         # Use App Authentication when the 'Authorization'-header parameter has been provided.
             use_app_authentication=True
             
-        
-        headers=request.headers
 
+        #
+        # Construct request to QTN
+        #
+        auth=None
+        username=None
+        password=None
         stream = None
-
+        headers = {}
+        headers['Accept'] = 'application/json'
+        
         url=qiy_node_proxy_path_to_qtn_url(path=path,request=request,target=target)
 
-        headers = {}
-        ignore_headers = ['Postman-Token',
-                          'Host',
-                          'X-Mock-Response-Code',
-                          'Cache-Control'
-                          ]
-        headers['Accept'] = 'application/json'
-        #        for name, value in request.headers:
-        #            headers[name]=value
-        data = str(request.data)
+        text=None
+        if 'Content-Type' in request.headers:
+            headers['Content-Type'] = 'application/json'
+            text=dumps(request.get_json())
 
-
+        # Authenticate request
         if use_transport_authentication:
             info("Transport authenticating request...")
             headers['password'] = node_transport_password(node_name=node_name, target=target)
 
         if use_user_authentication:
             info("User authenticating request...")
-            headers['Authorization-node-QTN'] = node_auth_header(data=data, node_name=node_name, target=target)
+            if not text is None:
+                headers['Authorization-node-QTN'] = node_auth_header(data=text, node_name=node_name, target=target)
+            else:
+                headers['Authorization-node-QTN'] = node_auth_header(node_name=node_name, target=target)
 
         if use_app_authentication:
             info("App authenticating request...")
-            username=None
-            if 'QTT_USERNAME' in environ:
-                username=environ['QTT_USERNAME']
-            password=None
-            if 'QTT_PASSWORD' in environ:
-                password=environ['QTT_PASSWORD']
+            # Reuse basic authentication if and when provided in request
+            if 'Authorization' in request.headers:
+                if 'Basic' in request.headers['Authorization']:
+                    headers['Authorization']=request.headers['Authorization']
+            else:
+            # Use configured authentication otherwise
+                if 'QTT_USERNAME' in environ:
+                    username=environ['QTT_USERNAME']
+                if 'QTT_PASSWORD' in environ:
+                    password=environ['QTT_PASSWORD']
 
             if username and password:
                 auth=(username,password)
@@ -2763,15 +2769,17 @@ def qiy_nodes_proxy(node_name, path):
         method = request.method
         method = method.lower()
 
-        r = methods[method](url, auth=auth, headers=headers, data=data, stream=stream)
-        info("Response from qtn: '{}'".format(request_to_str(r)))
+        if not text is None:
+            r = methods[method](url, auth=auth, headers=headers, data=text, stream=stream)
+        else:
+            r = methods[method](url, auth=auth, headers=headers, stream=stream)
+        print("Response from qtn: '{}'".format(request_to_str(r)))
 
         mimetype = None
         if 'Content-Type' in r.headers:
             mimetype = r.headers['Content-Type']
         headers = {'Access-Control-Allow-Origin': '*'}
 
-        text=r.text
 
         # replace server_url with proxy url in response json body
         if r.headers['Content-Type'] =="application/json":
@@ -2780,7 +2788,9 @@ def qiy_nodes_proxy(node_name, path):
             proxy_url="{}{}/".format(request.url_root,proxy_path)
             #print("proxy_url: '{}'".format(proxy_url))
 
-            text=text.replace(server_url,proxy_url)
+            text=r.text
+            if not text is None:
+                text=text.replace(server_url,proxy_url)
             #print("text: '{}'",format(text))
 
         response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
