@@ -923,6 +923,7 @@ def request_to_str(r):
 
 
 def response_to_str(response):
+    info("response: '{}'".format(response))
     s = "\n-------------------------------------------------------------------------------------------\n"
     s = s + "Response:\n"
     s = s + str(response.status_code) + "\n"
@@ -2790,25 +2791,17 @@ def qiy_nodes_proxy(node_name, path):
             mimetype = r.headers['Content-Type']
         headers = {'Access-Control-Allow-Origin': '*'}
 
-        info("1")
-
         # replace server_url with proxy url in response json body
         server_url=node_endpoint(target=target).replace("api","")
         proxy_url="{}{}/".format(request.url_root,proxy_path)
-
-        info("2")
 
         text=r.text
         if not text is None:
             text=text.replace(server_url,proxy_url)
 
-        info("3")
-
         response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
-        info("4")
-        info("Response from qtt: '{}'".format(response_to_str(response)))
-        info("5")
 
+        info("Response from qtt: '{}'".format(response_to_str(response)))
 
     return response
 
