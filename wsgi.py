@@ -908,7 +908,7 @@ def request_to_str(r):
     headers = request.headers
     for header in headers:
         s = s + "{0}\n".format(header)
-    body = str(request.data)
+    body = str(request.body)
     s = s + str(body)
     s = "\n-------------------------------------------------------------------------------------------\n"
 
