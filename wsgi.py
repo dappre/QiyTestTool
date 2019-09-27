@@ -2649,7 +2649,7 @@ def qiy_nodes_proxy(node_name, path):
     #print("accept_header: '{}'".format(accept_header))
 
     received_request = request_to_str(request)
-    info(received_request)
+    info("Received request: '{}'".format(received_request))
     received_request = escape(received_request)
 
     if 'text/html' in accept_header:
