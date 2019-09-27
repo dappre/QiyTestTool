@@ -2773,6 +2773,7 @@ def qiy_nodes_proxy(node_name, path):
             r = methods[method](url, auth=auth, headers=headers, data=text, stream=stream)
         else:
             r = methods[method](url, auth=auth, headers=headers, stream=stream)
+        info("Request to qtn: '{}'".format(request_to_str(r.request)))
         info("Response from qtn: '{}'".format(response_to_str(r)))
 
         mimetype = None
@@ -2780,20 +2781,18 @@ def qiy_nodes_proxy(node_name, path):
             mimetype = r.headers['Content-Type']
         headers = {'Access-Control-Allow-Origin': '*'}
 
-
         # replace server_url with proxy url in response json body
-        if r.headers['Content-Type'] =="application/json":
-            server_url=node_endpoint(target=target).replace("api","")
-            #print("server_url: '{}'".format(server_url))
-            proxy_url="{}{}/".format(request.url_root,proxy_path)
-            #print("proxy_url: '{}'".format(proxy_url))
+        server_url=node_endpoint(target=target).replace("api","")
+        #print("server_url: '{}'".format(server_url))
+        proxy_url="{}{}/".format(request.url_root,proxy_path)
+        #print("proxy_url: '{}'".format(proxy_url))
 
-            text=r.text
-            if not text is None:
-                text=text.replace(server_url,proxy_url)
-            #print("text: '{}'",format(text))
+        text=r.text
+        if not text is None:
+            text=text.replace(server_url,proxy_url)
 
         response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
+        info("Response from qtt: '{}'".format(response_to_str(response)))
 
     return response
 
