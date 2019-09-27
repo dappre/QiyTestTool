@@ -907,7 +907,10 @@ def request_to_str(r):
     s = s + "\n"
     headers = request.headers
     for header in headers:
-        s = s + "{0}\n".format(header)
+        if type(header) is str:
+            s = s + "{0}: {1}\n".format(header, headers[header])
+        else:
+            s = s + "{0}\n".format(header)
     try:
         body = str(request.body)
     except AttributeError:
