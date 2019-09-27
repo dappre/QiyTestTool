@@ -2730,8 +2730,8 @@ def qiy_nodes_proxy(node_name, path):
         url=qiy_node_proxy_path_to_qtn_url(path=path,request=request,target=target)
 
         text=None
-        if request.headers.has_key('Content-Type'):
-            info("'hupseflups' is in request.headers: '{}'".format(request.headers))
+        if 'Content-Type' in request_to_str(request):
+            info("'Content-Type' is in request.headers: '{}'".format(request.headers))
             headers['Content-Type'] = 'application/json'
             text=dumps(request.get_json())
 
