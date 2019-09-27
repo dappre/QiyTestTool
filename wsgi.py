@@ -2731,6 +2731,7 @@ def qiy_nodes_proxy(node_name, path):
 
         text=None
         if 'Content-Type' in request.headers:
+            info("'Content-Type' is in request.headers: '{}'".format(request.headers))
             headers['Content-Type'] = 'application/json'
             text=dumps(request.get_json())
 
