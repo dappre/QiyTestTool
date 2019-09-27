@@ -897,13 +897,8 @@ def node_service_types(target=None):
     return service_types
 
 
-def request_to_str(r, r_is_request=False):
-    if not r_is_request:
-        response = r
-        request = response.request
-    else:
-        response = None
-        request = r
+def request_to_str(r):
+    request = r
 
     s = "\n"
     s = s + "-------------------------------------------------------------------------------------------\n"
@@ -916,13 +911,9 @@ def request_to_str(r, r_is_request=False):
             s = s + "{0}\n".format(header)
         else:
             s = s + "{0}: {1}\n".format(header, headers[header])
-    if r_is_request:
-        body = str(request.data)
-    else:
-        body = request.body
+    body = str(request.data)
     s = s + str(body)
-    if response is not None:
-        s = s + response_to_str(response)
+    s = "\n-------------------------------------------------------------------------------------------\n"
 
     return s
 
@@ -977,7 +968,7 @@ def data_provider_service_type_service_endpoint_feeds_callback(data_provider_nam
 def data_provider_service_type_service_endpoint_feeds_callback_resolve(data_provider_name, ub_service_type_url):
     info("{} {}".format(data_provider_name, ub_service_type_url))
 
-    info("incoming request: '{}'".format(request_to_str(request, r_is_request=True)))
+    info("incoming request: '{}'".format(request_to_str(request)))
 
     service_type_url = ub_decode(ub_service_type_url)
 
@@ -1177,7 +1168,7 @@ def qiy_nodes_create():
         if r.status_code == 201:
             report = "node created :-)"
         else:
-            report = "Error creating node :-(, \n{}".format(request_to_str(r))
+            report = "Error creating node :-(, \n{}".format(response_to_str(r))
 
     else:
         report = "Node not created; already exists '{}'".format(node_name)
@@ -1307,7 +1298,7 @@ def qiy_nodes_action_messages_relay_options_get(node_name, b64_relay_option):
                      target=target,
                      url=relay_option
                      )
-    s = request_to_str(r)
+    s = response_to_str(r)
 
     return """
 <h1>Test Node {0} - Action messages - Relay options - get</h1>
@@ -1357,7 +1348,7 @@ def qiy_nodes_connect_using_connect_token_connect_token(node_name):
         target=target,
     )
 
-    html = "<pre>\n{}\n</pre>".format(escape(request_to_str(r)))
+    html = "<pre>\n{}\n</pre>".format(escape(response_to_str(r)))
 
     return """
 <h1>Test Node {0}</h1>
@@ -1472,7 +1463,7 @@ def qiy_nodes_connect_with_other_node_with_new_connect_token_as_consumer(node_na
                      node_name=node_name,
                      target=target)
 
-    log = request_to_str(r)
+    log = response_to_str(r)
 
     return """
 <h1>Test Node {0}</h1>
@@ -1514,7 +1505,7 @@ def qiy_nodes_connect_with_other_node_with_new_connect_token_as_producer(node_na
                      node_name=other_node_name,
                      target=target)
 
-    log = request_to_str(r)
+    log = response_to_str(r)
 
     return """
 <h1>Test Node {0}</h1>
@@ -1644,7 +1635,7 @@ def qiy_nodes_connection_delete(node_name, ub_connection_url):
                                connection_url=connection_url,
                                target=target)
 
-    log = request_to_str(r)
+    log = response_to_str(r)
 
     return """
 <h1>Test Node {0}</h1>
@@ -1683,7 +1674,7 @@ def qiy_nodes_connection_feed_access_encrypted(node_name, ub_connection_url, fee
         feed_id=feed_id,
         target=target,
     )
-    s = escape(request_to_str(r))
+    s = escape(response_to_str(r))
 
     return """
 <h1>Test Node {0}</h1>
@@ -1720,7 +1711,7 @@ def qiy_nodes_connection_feed_access_unencrypted(node_name, ub_connection_url, f
         feed_id=feed_id,
         target=target,
     )
-    s = escape(request_to_str(r))
+    s = escape(response_to_str(r))
 
     return """
 <h1>Test Node {0}</h1>
@@ -2223,7 +2214,7 @@ def qiy_nodes_feed_access_encrypted(node_name, feed_id):
                                    modulus=modulus,
                                    target=target,
                                    )
-    s = escape(request_to_str(r))
+    s = escape(response_to_str(r))
 
     return """
 <h1>Test Node {0}</h1>
@@ -2247,7 +2238,7 @@ def qiy_nodes_feed_access_unencrypted(node_name, feed_id):
     info("{}, {}".format(node_name, feed_id))
 
     r = node_feed_access_unencrypted(node_name, feed_id, target=target)
-    s = escape(request_to_str(r))
+    s = escape(response_to_str(r))
 
     return """
 <h1>Test Node {0}</h1>
@@ -2401,7 +2392,7 @@ def qiy_nodes_feeds_request_mbox(node_name, b64_mbox_url,
                      target=target,
                      url=mbox_url
                      )
-    s = request_to_str(r)
+    s = response_to_str(r)
 
     page = """
 <h1>Test Node {0} qiy_nodes_feeds_request_mbox</h1>
@@ -2656,7 +2647,7 @@ def qiy_nodes_proxy(node_name, path):
         accept_header = request.headers['accept']
     #print("accept_header: '{}'".format(accept_header))
 
-    received_request = request_to_str(request, r_is_request=True)
+    received_request = request_to_str(request)
     info(received_request)
     received_request = escape(received_request)
 
@@ -2785,7 +2776,7 @@ def qiy_nodes_proxy(node_name, path):
             r = methods[method](url, auth=auth, headers=headers, data=text, stream=stream)
         else:
             r = methods[method](url, auth=auth, headers=headers, stream=stream)
-        print("Response from qtn: '{}'".format(response_to_str(r)))
+        info("Response from qtn: '{}'".format(response_to_str(r)))
 
         mimetype = None
         if 'Content-Type' in r.headers:
@@ -3238,7 +3229,7 @@ def qtt_service_types_relying_parties_orchestrators_feed_request(ub_service_type
     )
 
     report = "<pre>\n{}\n</pre>".format(
-        escape(request_to_str(r)),
+        escape(response_to_str(r)),
     )
 
     return """
@@ -3335,7 +3326,7 @@ def qtt_service_types_create():
                     pass
         else:
             status_code = r.status_code
-            report = "node not created :-(, {}".format(request_to_str(r))
+            report = "node not created :-(, {}".format(response_to_str(r))
 
     else:
         report = "Using existing node '{}'".format(data_provider_name)
@@ -3360,7 +3351,7 @@ def qtt_service_types_create():
             report = """{}
 {}
 """.format(report,
-           escape(request_to_str(r)))
+           escape(response_to_str(r)))
 
         else:
             report = """{}
