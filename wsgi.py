@@ -922,29 +922,20 @@ def request_to_str(r, r_is_request=False):
         body = request.body
     s = s + str(body)
     if response is not None:
-        s = s + "\n"
-        s = s + "\n\n"
-        s = s + "Response:\n"
-        s = s + str(response.status_code) + "\n"
-        headers = response.headers
-        for header in headers:
-            s = s + "{0}: {1}\n".format(header, headers[header])
-        s = s + "\n"
-        s = s + response.text
-    s = s + "\n-------------------------------------------------------------------------------------------\n"
+        s = s + response_to_str(response)
 
     return s
 
 
 def response_to_str(response):
-    s = "-------------------------------------------------------------------------------------------\n"
+    s = "\n-------------------------------------------------------------------------------------------\n"
     s = s + "Response:\n"
     s = s + str(response.status_code) + "\n"
     headers = response.headers
     for header in headers:
-        s = s + "{0}\n".format(header)
+        s = s + "{0}: {1}\n".format(header, headers[header])
     s = s + "\n"
-    s = s + response.get_data(as_text=True)
+    s = s + response.text
     s = s + "\n-------------------------------------------------------------------------------------------\n"
 
     return s
