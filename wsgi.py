@@ -2746,6 +2746,7 @@ def qiy_nodes_proxy(node_name, path):
         is_app_authenticated = False
 
         if use_app_authentication:
+            info("App authenticating request...")
             # Reuse basic authentication if and when provided in request
             if 'Authorization' in request.headers:
                 if 'Basic' in request.headers['Authorization']:
@@ -2776,6 +2777,8 @@ def qiy_nodes_proxy(node_name, path):
         method = request.method
         method = method.lower()
 
+        info("headers: '{}'".format(headers))
+        info("text: '{}'".format(text))
         if not text is None:
             r = methods[method](url, auth=auth, headers=headers, data=text, stream=stream)
         else:
