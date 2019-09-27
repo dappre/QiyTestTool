@@ -908,7 +908,11 @@ def request_to_str(r):
     headers = request.headers
     for header in headers:
         s = s + "{0}\n".format(header)
-    body = str(request.body)
+    try:
+        body = str(request.body)
+    except AttributeError:
+        body = request.get_data(as_text=True)
+        
     s = s + str(body)
     s = "\n-------------------------------------------------------------------------------------------\n"
 
