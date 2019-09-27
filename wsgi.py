@@ -2722,20 +2722,15 @@ def qiy_nodes_proxy(node_name, path):
         password=None
         stream = None
         headers = {}
-        
-        info("headers 1: '{}'".format(headers))
-                
+                       
         headers['Accept'] = 'application/json'
 
         url=qiy_node_proxy_path_to_qtn_url(path=path,request=request,target=target)
 
         text=None
         if 'Content-Type' in request_to_str(request):
-            info("'Content-Type' is in request.headers: '{}'".format(request.headers))
             headers['Content-Type'] = 'application/json'
             text=dumps(request.get_json())
-
-        info("headers 2: '{}'".format(headers))
 
         # Authenticate request
         if use_transport_authentication:
@@ -2748,8 +2743,6 @@ def qiy_nodes_proxy(node_name, path):
                 headers['Authorization-node-QTN'] = node_auth_header(data=text, node_name=node_name, target=target)
             else:
                 headers['Authorization-node-QTN'] = node_auth_header(node_name=node_name, target=target)
-
-        info("headers 3: '{}'".format(headers))
 
         is_app_authenticated = False
 
@@ -2773,9 +2766,6 @@ def qiy_nodes_proxy(node_name, path):
                 else:
                     warning("Request not app authenticated; no credential provided in QTT_USERNAME and QTT_PASSWORD")
 
-        info("headers 4: '{}'".format(headers))
-
-
         methods = {
             "delete": requests.delete,
             "get": requests.get,
@@ -2787,35 +2777,38 @@ def qiy_nodes_proxy(node_name, path):
         method = request.method
         method = method.lower()
 
-        info("headers 5: '{}'".format(headers))
-        info("text: '{}'".format(text))
         if not text is None:
-            info("text is not None: '{}'".format(text))
             r = methods[method](url, auth=auth, headers=headers, data=text, stream=stream)
         else:
-            info("text is None: '{}'".format(text))
             r = methods[method](url, auth=auth, headers=headers, stream=stream)
             
         info("Request to qtn: '{}'".format(request_to_str(r.request)))
         info("Response from qtn: '{}'".format(response_to_str(r)))
 
         mimetype = None
-        if 'Content-Type' in r.headers:
+        if 'Content-Type' in response_to_str(r):
             mimetype = r.headers['Content-Type']
         headers = {'Access-Control-Allow-Origin': '*'}
 
+        info("1")
+
         # replace server_url with proxy url in response json body
         server_url=node_endpoint(target=target).replace("api","")
-        #print("server_url: '{}'".format(server_url))
         proxy_url="{}{}/".format(request.url_root,proxy_path)
-        #print("proxy_url: '{}'".format(proxy_url))
+
+        info("2")
 
         text=r.text
         if not text is None:
             text=text.replace(server_url,proxy_url)
 
+        info("3")
+
         response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
+        info("4")
         info("Response from qtt: '{}'".format(response_to_str(response)))
+        info("5")
+
 
     return response
 
