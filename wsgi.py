@@ -2722,6 +2722,9 @@ def qiy_nodes_proxy(node_name, path):
         password=None
         stream = None
         headers = {}
+        
+        info("headers 1: '{}'".format(headers))
+                
         headers['Accept'] = 'application/json'
 
         url=qiy_node_proxy_path_to_qtn_url(path=path,request=request,target=target)
@@ -2730,6 +2733,8 @@ def qiy_nodes_proxy(node_name, path):
         if 'Content-Type' in request.headers:
             headers['Content-Type'] = 'application/json'
             text=dumps(request.get_json())
+
+        info("headers 2: '{}'".format(headers))
 
         # Authenticate request
         if use_transport_authentication:
@@ -2742,6 +2747,8 @@ def qiy_nodes_proxy(node_name, path):
                 headers['Authorization-node-QTN'] = node_auth_header(data=text, node_name=node_name, target=target)
             else:
                 headers['Authorization-node-QTN'] = node_auth_header(node_name=node_name, target=target)
+
+        info("headers 3: '{}'".format(headers))
 
         is_app_authenticated = False
 
@@ -2765,6 +2772,8 @@ def qiy_nodes_proxy(node_name, path):
                 else:
                     warning("Request not app authenticated; no credential provided in QTT_USERNAME and QTT_PASSWORD")
 
+        info("headers 4: '{}'".format(headers))
+
 
         methods = {
             "delete": requests.delete,
@@ -2777,12 +2786,15 @@ def qiy_nodes_proxy(node_name, path):
         method = request.method
         method = method.lower()
 
-        info("headers: '{}'".format(headers))
+        info("headers 5: '{}'".format(headers))
         info("text: '{}'".format(text))
         if not text is None:
+            info("text is not None: '{}'".format(text))
             r = methods[method](url, auth=auth, headers=headers, data=text, stream=stream)
         else:
+            info("text is None: '{}'".format(text))
             r = methods[method](url, auth=auth, headers=headers, stream=stream)
+            
         info("Request to qtn: '{}'".format(request_to_str(r.request)))
         info("Response from qtn: '{}'".format(response_to_str(r)))
 
