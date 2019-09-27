@@ -2757,23 +2757,26 @@ def qiy_nodes_proxy(node_name, path):
             else:
                 headers['Authorization-node-QTN'] = node_auth_header(node_name=node_name, target=target)
 
+        is_app_authenticated = False
+
         if use_app_authentication:
-            info("App authenticating request...")
             # Reuse basic authentication if and when provided in request
             if 'Authorization' in request.headers:
                 if 'Basic' in request.headers['Authorization']:
                     headers['Authorization']=request.headers['Authorization']
-            else:
+                    is_app_authenticated = True
+
+            if not is_app_authenticated:
             # Use configured authentication otherwise
                 if 'QTT_USERNAME' in environ:
                     username=environ['QTT_USERNAME']
                 if 'QTT_PASSWORD' in environ:
                     password=environ['QTT_PASSWORD']
 
-            if username and password:
-                auth=(username,password)
-            else:
-                warning("Request not app authenticated; no credential provided in QTT_USERNAME and QTT_PASSWORD")
+                if username and password:
+                    auth=(username,password)
+                else:
+                    warning("Request not app authenticated; no credential provided in QTT_USERNAME and QTT_PASSWORD")
 
 
         methods = {
@@ -2791,7 +2794,7 @@ def qiy_nodes_proxy(node_name, path):
             r = methods[method](url, auth=auth, headers=headers, data=text, stream=stream)
         else:
             r = methods[method](url, auth=auth, headers=headers, stream=stream)
-        print("Response from qtn: '{}'".format(request_to_str(r)))
+        print("Response from qtn: '{}'".format(response_to_str(r)))
 
         mimetype = None
         if 'Content-Type' in r.headers:
