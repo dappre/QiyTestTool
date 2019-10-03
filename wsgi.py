@@ -2800,9 +2800,7 @@ def qiy_nodes_proxy(node_name, path):
             text=text.replace(server_url,proxy_url)
 
         response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
-
-        info("Response from qtt: '{}'".format(response_to_str(response)))
-
+        
     return response
 
 
