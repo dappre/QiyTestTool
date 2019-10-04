@@ -2679,6 +2679,7 @@ def qiy_nodes_proxy(node_name, path):
 
     check_qttdevkey=False
     forward_request=False
+    use_qiy_api_key = False
 
 
     #
@@ -2755,6 +2756,7 @@ def qiy_nodes_proxy(node_name, path):
                 username = up.split(":")[0]
                 password = up.split(":")[1]
                 if username in devkeys:
+                    use_qiy_api_key = True
                     if not password==devkeys[username]['password']:
                         valid_devkey = False
 
@@ -2834,14 +2836,15 @@ def qiy_nodes_proxy(node_name, path):
 
         if use_app_authentication:
             info("App authenticating request...")
-            # Reuse basic authentication if and when provided in request
+            # Reuse basic authentication if and when provided in request unless a qtt dev key is used
             if 'Authorization' in request.headers:
                 if 'Basic' in request.headers['Authorization']:
                     headers['Authorization']=request.headers['Authorization']
                     is_app_authenticated = True
 
-            if not is_app_authenticated:
+            if use_qiy_api_key or not is_app_authenticated:
             # Use configured authentication otherwise
+                info("Using qiy api key as defined in QTT_USERNAME and QTT_PASSWORD.")
                 if 'QTT_USERNAME' in environ:
                     username=environ['QTT_USERNAME']
                 if 'QTT_PASSWORD' in environ:
