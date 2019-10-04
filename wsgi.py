@@ -374,12 +374,12 @@ def root():
 
 <h1>Qiy Test Tool</h1>
 
-A tool to assist <a href="https://github.com/qiyfoundation/Qiy-Scheme>Qiy</a> developers.<p>
+A tool to assist <a href="https://github.com/qiyfoundation/Qiy-Scheme">Qiy</a> developers.<p>
 
-NB: You need a <i>developer key</i> for this tool. You can get it <a href="https://github.com/qiyfoundation/Qiy-Scheme/blob/review-board/Qiy-Node/Qiy%20Node%20API.md#service-desk">here</a>.
+NB: You need a <i>developer key</i> for this tool.<p>
 
+You can get it <a href="https://github.com/qiyfoundation/Qiy-Scheme/blob/review-board/Qiy-Node/Qiy%20Node%20API.md#service-desk">here</a>.
 
-Some links:
 <ul>
 <li>You can run the Qiy Test Tool everywhere, just follow the instructions on <a href="https://github.com/digital-me/QiyTestTool">Github</a>.
 <li>The api for the Qiy Trust Network is available for everyone, see <a href="https://github.com/qiyfoundation/Qiy-Scheme/blob/review-board/Qiy-Node/Qiy%20Node%20API.md">the Qiy Node Api</a>
