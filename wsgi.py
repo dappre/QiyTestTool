@@ -32,6 +32,7 @@ from os import getenv
 from os import makedirs
 from os.path import expanduser
 from os.path import isdir
+from os.path import isfile
 from os.path import join
 # from pyqrcode import create
 from pathlib import Path
@@ -74,6 +75,16 @@ basicConfig(filename="QiyTestTool.log",
             format='%(asctime)s %(funcName)s %(levelname)s: %(message)s',
             )
 
+# Check whether a Qiy api key has been configured
+# See https://github.com/qiyfoundation/Qiy-Scheme/blob/review-board/Qiy-Node/Qiy%20Node%20API.md#app-authentication.
+if 'QTT_USERNAME' not in environ:
+    critical("ERROR: No QTT_USERNAME specified.")
+    exit(1)
+if 'QTT_PASSWORD' not in environ:
+    critical("ERROR: No QTT_USERNAME specified.")
+    exit(1)
+
+
 if 'TARGET' not in environ:
     critical("ERROR: No TARGET specified.")
     exit(1)
@@ -96,6 +107,29 @@ if not isdir(datapath):
     info("Data dir created")
 else:
     info("Data dir exists")
+
+# Create devkeys.json for QTT developer keys if required
+devkeys={}
+devkeyspath=join(datapath,"devkeys.json")
+if not isfile(devkeyspath):
+    with open(devkeyspath,'w') as f:
+        f.write("{}")
+    info("Devkeys file created")
+
+with open(devkeyspath,'r') as f:
+    devkeys=load(f)
+
+# Example fill
+# {
+#   "john0101@doe": {
+#     "username": "john0101@doe",
+#     "password": "s3cr3t"
+#   }
+# }
+
+if not len(devkeys):
+    critical("ERROR: No developer keys specified in {}.".format(devkeyspath))
+    exit(1)
 
 
 info("Configuration: ok")
@@ -340,7 +374,10 @@ def root():
 
 <h1>Qiy Test Tool</h1>
 
-A tool to assist developers to use the Qiy Trust Network.<p>
+A tool to assist <a href="https://github.com/qiyfoundation/Qiy-Scheme>Qiy</a> developers.<p>
+
+NB: You need a <i>developer key</i> for this tool. You can get it <a href="https://github.com/qiyfoundation/Qiy-Scheme/blob/review-board/Qiy-Node/Qiy%20Node%20API.md#service-desk">here</a>.
+
 
 Some links:
 <ul>
@@ -2640,6 +2677,10 @@ def qiy_nodes_proxy(node_name, path):
     info("{}".format(node_name, path))
     proxy_path="qiy_nodes/{}/proxy".format(node_name)
 
+    check_qttdevkey=False
+    forward_request=False
+
+
     #
     # Return webpage for text/html requests.
     #
@@ -2695,9 +2736,53 @@ def qiy_nodes_proxy(node_name, path):
         response = Response(text, headers=headers, status=200, mimetype=mimetype)
 
     else:
+        check_qttdevkey=True
+
+
+    valid_devkey = True
+    if check_qttdevkey:    
+        #
+        # Check qtt devkey
+        # - Accept all requests which do not have  a qttdevkey.
+        # - Reject requests with an invalid qttdevkey.
+        #
+        valid_devkey = True
+        
+        info("Checking qtt dev")
+        if 'Authorization' in request.headers:
+            if 'Basic' in request.headers['Authorization']:
+                up=b64decode(request.headers['Authorization'].replace("Basic ","")).decode()
+                username = up.split(":")[0]
+                password = up.split(":")[1]
+                if username in devkeys:
+                    if not password==devkeys[username]['password']:
+                        valid_devkey = False
+
+    if not valid_devkey:
+        # 
+        # Redirect not authenticated requests to homepage
+        #
+        info("No (valid) dev key provided")
+        body={
+            "errors": [
+                {
+                    "status": 501,
+                    "message": "No (valid) Qiy Test Tool developer key provided."
+                }
+            ]
+        }
+        text=dumps(body)
+        headers={"Content-Type":"application/json"}
+        mimetype="application/json"
+        response = Response(text, headers=headers, status=200, mimetype=mimetype)
+    else:
+        forward_request = True
+
+    if forward_request:
         #
         # Forward other requests to Qiy Trust Network
         #
+        info("Forwarding request")
         use_transport_authentication=False
         use_app_authentication=False
         use_user_authentication=False
