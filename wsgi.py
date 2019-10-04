@@ -345,7 +345,7 @@ A tool to assist developers to use the Qiy Trust Network.<p>
 Some links:
 <ul>
 <li>You can run the Qiy Test Tool everywhere, just follow the instructions on <a href="https://github.com/digital-me/QiyTestTool">Github</a>.
-<li>The api for the Qiy Trust Network is available for everyone, see <a href="https://qiy.api.digital-me.nl/">the Qiy Node Api</a>
+<li>The api for the Qiy Trust Network is available for everyone, see <a href="https://github.com/qiyfoundation/Qiy-Scheme/blob/review-board/Qiy-Node/Qiy%20Node%20API.md">the Qiy Node Api</a>
 <li>The Qiy Trust Network is one part of the <a href="https://github.com/qiyfoundation/Qiy-Scheme">Qiy Scheme</a>: a scheme that gives individuals control over their data while creating opportunities for organizations.
 <li>The Qiy Scheme is an initiative of the <a href="https://qiyfoundation.org/">Qiy Foundation</a>.
 </ul>
