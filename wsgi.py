@@ -110,7 +110,7 @@ else:
 
 # Create devkeys.json for QTT developer keys if required
 devkeys={}
-devkeyspath=join(datapath,"devkeys.json")
+devkeyspath=expanduser(join(datapath,"devkeys.json"))
 if not isfile(devkeyspath):
     with open(devkeyspath,'w') as f:
         f.write("{}")
@@ -952,7 +952,7 @@ def request_to_str(r):
         body = str(request.body)
     except AttributeError:
         body = request.get_data(as_text=True)
-        
+
     s = s + str(body)
     s = s + "\n-------------------------------------------------------------------------------------------\n"
 
@@ -2222,7 +2222,7 @@ def qiy_nodes_events_source(node_name):
             info("event: '{}'".format(event))
             sse = ServerSentEvent(event, None)
             yield sse.encode()
-            
+
             # Set to TRUE for example if hosted on pythonanywhere:
             if 'QTT_CLOSE_EVENTS_CONNECTION' in environ:
                 if environ['QTT_CLOSE_EVENTS_CONNECTION'] == 'TRUE':
@@ -2718,7 +2718,7 @@ def qiy_nodes_proxy(node_name, path):
 
     elif match("(v[^/]+/)?owners",path) and request.method=="POST":
 
-        # 
+        #
         # Redirect Node Create requests to homepage
         #
         info("Qiy Node Create request received - redirecting user to Qiy Test Tool")
@@ -2740,14 +2740,14 @@ def qiy_nodes_proxy(node_name, path):
 
 
     valid_devkey = True
-    if check_qttdevkey:    
+    if check_qttdevkey:
         #
         # Check qtt devkey
         # - Accept all requests which do not have  a qttdevkey.
         # - Reject requests with an invalid qttdevkey.
         #
         valid_devkey = True
-        
+
         info("Checking qtt dev")
         if 'Authorization' in request.headers:
             if 'Basic' in request.headers['Authorization']:
@@ -2759,7 +2759,7 @@ def qiy_nodes_proxy(node_name, path):
                         valid_devkey = False
 
     if not valid_devkey:
-        # 
+        #
         # Redirect not authenticated requests to homepage
         #
         info("No (valid) dev key provided")
@@ -2808,7 +2808,7 @@ def qiy_nodes_proxy(node_name, path):
         password=None
         stream = None
         headers = {}
-                       
+
         headers['Accept'] = 'application/json'
 
         url=qiy_node_proxy_path_to_qtn_url(path=path,request=request,target=target)
@@ -2867,7 +2867,7 @@ def qiy_nodes_proxy(node_name, path):
             r = methods[method](url, auth=auth, headers=headers, data=text, stream=stream)
         else:
             r = methods[method](url, auth=auth, headers=headers, stream=stream)
-            
+
         info("Request to qtn: '{}'".format(request_to_str(r.request)))
         info("Response from qtn: '{}'".format(response_to_str(r)))
 
@@ -2885,7 +2885,7 @@ def qiy_nodes_proxy(node_name, path):
             text=text.replace(server_url,proxy_url)
 
         response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
-        
+
     return response
 
 
