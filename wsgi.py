@@ -2344,7 +2344,7 @@ def qiy_nodes_feeds(node_name):
 <h2>Feeds</h2>
 <ul>
 <li><a href="/qiy_nodes/{0}/feeds/list">List feed id's.</a> (<a href="/qiy_nodes/{0}/feeds/list/raw">raw</a>)
-<li><a href="/qiy_nodes/{0}/feeds/request">Request for feed.</a>
+<li><a href="/qiy_nodes/{0}/feeds/request/home">Request for feed.</a>
 </ul>
 
 <a href="/">Home</a>
@@ -2390,17 +2390,17 @@ def qiy_nodes_feeds_list_raw(node_name):
     return dumps(ids, indent=2)
 
 
-@application.route('/qiy_nodes/<node_name>/feeds/request')
-def qiy_nodes_feeds_request(node_name):
+@application.route('/qiy_nodes/<node_name>/feeds/request/home')
+def qiy_nodes_feeds_request_home(node_name):
     info("qiy_nodes_feeds_request({})".format(node_name))
 
     connections = qiy_nodes_connections_json(node_name)
 
     lis = ""
     for connection in connections:
-        mbox_url = connections[connection]['links']['mbox']
-        b64mbox_url = quote_plus(b64encode(mbox_url.encode()).decode())
-        url = "/qiy_nodes/{}/feeds/request/mbox/{}".format(node_name, b64mbox_url)
+        feeds_url = connections[connection]['links']['feeds']
+        b64feeds_url = quote_plus(b64encode(feeds_url.encode()).decode())
+        url = "/qiy_nodes/{}/feeds/request/{}".format(node_name, b64feeds_url)
         if 'pid' in connections[connection]:
             li = '<li>pid {0}: <a href="{1}">{2}</a>\n'.format(connections[connection]['pid'],
                                                                url,
@@ -2421,13 +2421,14 @@ def qiy_nodes_feeds_request(node_name):
     return page
 
 
-@application.route('/qiy_nodes/<node_name>/feeds/request/mbox/<path:b64_mbox_url>')
-def qiy_nodes_feeds_request_mbox(node_name, b64_mbox_url,
-                                 operation_type_url="https://github.com/qiyfoundation/fiKks/tree/master/schema/v1"
-                                 ):
-    info("{}, {}".format(node_name, b64_mbox_url))
+@application.route('/qiy_nodes/<node_name>/feeds/request/<path:b64_feeds_url>')
+def qiy_nodes_feeds_request( node_name,
+                             b64_feeds_url,
+                             operation_type_url="https://github.com/qiyfoundation/Payment-Due-List/tree/master/schema/v1",
+                             ):
+    info("{}, {}".format(node_name, b64_feeds_url))
 
-    mbox_url = b64decode(b64_mbox_url).decode()
+    feeds_url = b64decode(b64_feeds_url).decode()
 
     body = {
         "protocol": operation_type_url,
@@ -2437,23 +2438,24 @@ def qiy_nodes_feeds_request_mbox(node_name, b64_mbox_url,
         "Content-Type": "application/json"
     }
 
-    r = node_request( auth=(environ['QTT_USERNAME'],environ['QTT_PASSWORD']),data=dumps(body),
-                     headers=headers,
-                     node_name=node_name,
-                     operation="post",
-                     target=target,
-                     url=mbox_url
-                     )
-    s = response_to_str(r)
+    r = node_request( auth=(environ['QTT_USERNAME'],environ['QTT_PASSWORD']),
+                      data=dumps(body),
+                      headers=headers,
+                      node_name=node_name,
+                      operation="post",
+                      target=target,
+                      url=feeds_url
+                      )
+    s = "{}\n{}".format(request_to_str(r.request),response_to_str(r))
 
     page = """
-<h1>Test Node {0} qiy_nodes_feeds_request_mbox</h1>
+<h1>Test Node {0} qiy_nodes_feeds_request</h1>
 
 <pre>
 {1}
 </pre>
 <p>
-<a href="/qiy_nodes/{0}/feeds/request">Up</a>
+<a href="/qiy_nodes/{0}/feeds/request/home">Up</a>
 
 """.format(node_name, s)
     return page
