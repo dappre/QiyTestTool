@@ -248,7 +248,7 @@ def node_events_listener(event=None,
     info("{0} {1}".format(node_name, target))
     headers = {"Accept": "text/event-stream"}
     try:
-        with node_request( auth=(environ('QTT_USERNAME'),endpoint_name="events",
+        with node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')), endpoint_name="events",
                           headers=headers,
                           node_name=node_name,
                           node_type=node_type,
@@ -501,7 +501,7 @@ def node_connection_delete(
         node_name=None,
         connection_url=None,
         target=None):
-    r = node_request( auth=(environ('QTT_USERNAME'),url=connection_url,
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),url=connection_url,
                      node_name=node_name,
                      operation="delete",
                      target=target,
@@ -519,7 +519,8 @@ def node_connection_feed_access_encrypted(
         target=None,
 ):
     headers = {'Accept': 'application/json'}
-    r = node_request( auth=(environ('QTT_USERNAME'),url=connection_url,
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
+                     url=connection_url,
                      headers=headers,
                      node_name=node_name,
                      target=target)
@@ -540,7 +541,7 @@ def node_connection_feed_access_encrypted(
     data = body
     headers = {'Content-Type': 'application/xml', 'Accept': 'application/xml'}
 
-    r = node_request( auth=(environ('QTT_USERNAME'),
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
         data=data,
         headers=headers,
         node_name=node_name,
@@ -558,7 +559,8 @@ def node_connection_feed_access_unencrypted(
         target=None,
 ):
     headers = {'Accept': 'application/json'}
-    r = node_request( auth=(environ('QTT_USERNAME'),url=connection_url,
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
+                     url=connection_url,
                      headers=headers,
                      node_name=node_name,
                      target=target)
@@ -567,7 +569,7 @@ def node_connection_feed_access_unencrypted(
 
     url = "{}/{}".format(connection_feeds_url,
                          feed_id)
-    r = node_request( auth=(environ('QTT_USERNAME'),
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
         url=url,
         headers=headers,
         node_name=node_name,
@@ -579,14 +581,16 @@ def node_connection_feed_access_unencrypted(
 def node_connection_feed_ids(node_name,
                              connection_url):
     headers = {'Accept': 'application/json'}
-    r = node_request( auth=(environ('QTT_USERNAME'),url=connection_url,
+    r = node_request( auth=(environ('QTT_USERNAME'), environ('QTT_PASSWORD')),
+                     url=connection_url,
                      headers=headers,
                      node_name=node_name,
                      target=target)
 
     connection_feeds_url = r.json()['links']['feeds']
 
-    r = node_request( auth=(environ('QTT_USERNAME'),url=connection_feeds_url,
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
+                     url=connection_feeds_url,
                      headers=headers,
                      node_name=node_name,
                      target=target)
@@ -647,7 +651,8 @@ def node_feed_ids(node_name,
     if service_type_url is not None:
         query_parameters = {'operation': ub_encode(service_type_url)}
     headers = {'Accept': 'application/json'}
-    r = node_request( auth=(environ('QTT_USERNAME'),endpoint_name="feeds",
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
+                     endpoint_name="feeds",
                      headers=headers,
                      node_name=node_name,
                      query_parameters=query_parameters,
@@ -664,9 +669,9 @@ def node_feed_access_encrypted(
         modulus=None,
         target=target,
 ):
-    r = node_request( auth=(environ('QTT_USERNAME'),
-        node_name=node_name,
-        target=target)
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
+            node_name=node_name,
+            target=target)
     feeds_endpoint_url = r.json()['links']['feeds']
 
     url = "{}/{}".format(feeds_endpoint_url, feed_id)
@@ -682,7 +687,7 @@ def node_feed_access_encrypted(
 </ds:KeyInfo>""".format(modulus, exponent)
     data = body
 
-    r = node_request( auth=(environ('QTT_USERNAME'),
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
         data=data,
         headers=headers,
         node_name=node_name,
@@ -697,14 +702,14 @@ def node_feed_access_unencrypted(node_name, feed_id,
                                  headers={'Accept': 'application/json', 'Content-Type': 'application/json'},
                                  target=target,
                                  ):
-    r = node_request( auth=(environ('QTT_USERNAME'),
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
         node_name=node_name,
         target=target)
     feeds_endpoint_url = r.json()['links']['feeds']
 
     url = "{}/{}".format(feeds_endpoint_url, feed_id)
 
-    r = node_request( auth=(environ('QTT_USERNAME'),
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
         headers=headers,
         node_name=node_name,
         operation="post",
@@ -737,18 +742,18 @@ def node_feed_request(
             "input": b64_input
         }
         data = dumps(body)
-        r = node_request( auth=(environ('QTT_USERNAME'),
-            data=data,
-            headers={
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'password': node_transport_password(node_name=relying_party, target=target)
-            },
-            operation="post",
-            node_name=relying_party,
-            target=target,
-            url=feeds_url,
-        )
+        r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
+                data=data,
+                headers={
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'password': node_transport_password(node_name=relying_party, target=target)
+                },
+                operation="post",
+                node_name=relying_party,
+                target=target,
+                url=feeds_url,
+                )
 
     elif connection is not None:
         info("connection: {}".format(connection))
@@ -804,7 +809,7 @@ def node_feeds_access_unencrypted(node_name, feed_id,
     data = dumps(body)
     data = None
     #    print(data)
-    r = node_request( auth=(environ('QTT_USERNAME'),
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
         data=data,
         endpoint_name="feeds",
         headers=headers,
@@ -823,7 +828,7 @@ def node_feeds_access_unencrypted(node_name, feed_id,
     data = dumps(body)
     data = None
     #    print(data)
-    r = node_request( auth=(environ('QTT_USERNAME'),
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
         data=data,
         endpoint_name="feeds",
         headers=headers,
@@ -834,7 +839,7 @@ def node_feeds_access_unencrypted(node_name, feed_id,
 
 
 def node_is_accessible(node_name=None, target=None):
-    r = node_request( auth=(environ('QTT_USERNAME'),node_name=node_name, target=target)
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),node_name=node_name, target=target)
     return r.status_code == 200
 
 
@@ -876,7 +881,7 @@ def node_service_catalogue_get(
         target=None,
 ):
     headers = {'Accept': 'application/json'}
-    r = node_request( auth=(environ('QTT_USERNAME'),endpoint_name="serviceCatalog",
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),endpoint_name="serviceCatalog",
                      headers=headers,
                      node_name=node_name,
                      target=target)
@@ -890,7 +895,7 @@ def node_service_catalogue_set(
 ):
     headers = {'Content-Type': 'application/json'}
     data = dumps(service_catalogue)
-    r = node_request( auth=(environ('QTT_USERNAME'),
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
         data=data,
         endpoint_name="serviceCatalog",
         headers=headers,
@@ -1174,7 +1179,7 @@ def qiy_nodes_delete(node_name: str):
     :param node_name: the name of the node
     :return: the response of the delete request on the node (for now, TODO)
     """
-    r = node_request( auth=(environ('QTT_USERNAME'),operation='delete', node_name=node_name, endpoint_name='self', target=target)
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),operation='delete', node_name=node_name, endpoint_name='self', target=target)
     if r.status_code == 204:
         report = "The node no longer exists"
     else:
@@ -1277,7 +1282,7 @@ def qiy_nodes(node_name):
 def qiy_nodes_action_messages_json(node_name):
     info("qiy_nodes_action_messages_json({})".format(node_name))
 
-    r = node_request( auth=(environ('QTT_USERNAME'),endpoint_name="amList", node_name=node_name, target=target)
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),endpoint_name="amList", node_name=node_name, target=target)
     action_messages_by_created = {}
     if r.status_code == 200:
         action_messages = r.json()['result']
@@ -1335,7 +1340,7 @@ def qiy_nodes_action_messages_relay_options_get(node_name, b64_relay_option):
 
     relay_option = b64decode(b64_relay_option.encode()).decode()
 
-    r = node_request( auth=(environ('QTT_USERNAME'),node_name=node_name,
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),node_name=node_name,
                      operation="post",
                      #            operation="put",
                      target=target,
@@ -1602,7 +1607,7 @@ def qiy_nodes_connected_nodes(node_name):
 def qiy_nodes_connections_json(node_name):
     info("qiy_nodes_connections_json({})".format(node_name))
 
-    r = node_request( auth=(environ('QTT_USERNAME'),endpoint_name="connections", node_name=node_name, target=target)
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),endpoint_name="connections", node_name=node_name, target=target)
     if r.status_code == 200:
         connections = r.json()['result']
         connections_by_active_from = {}
@@ -1627,7 +1632,7 @@ def qiy_nodes_connection(node_name, ub_connection_url):
 
     connection_url = b64decode(unquote(ub_connection_url)).decode()
 
-    connection = dumps(node_request( auth=(environ('QTT_USERNAME'),
+    connection = dumps(node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
         node_name=node_name,
         headers={'Accept': 'application/json'},
         target=target,
@@ -1999,7 +2004,8 @@ def qiy_nodes_connect_tokens_json(node_name):
 
     connect_tokens_by_created = {}
 
-    r = node_request( auth=(environ('QTT_USERNAME'),endpoint_name="ctList", node_name=node_name, target=target)
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
+                      endpoint_name="ctList", node_name=node_name, target=target)
     if r.status_code == 200:
         connect_tokens = r.json()
         info("connect_tokens: '{}'".format(dumps(connect_tokens, indent=2)))
@@ -2122,7 +2128,7 @@ def qiy_nodes_event_callback_addresses(node_name):
     info("{}".format(node_name))
 
     headers = {'Accept': 'application/json'}
-    urls = dumps(node_request( auth=(environ('QTT_USERNAME'),
+    urls = dumps(node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),
         endpoint_name="eventCallbacks",
         headers=headers,
         node_name=node_name,
@@ -2431,7 +2437,7 @@ def qiy_nodes_feeds_request_mbox(node_name, b64_mbox_url,
         "Content-Type": "application/json"
     }
 
-    r = node_request( auth=(environ('QTT_USERNAME'),data=dumps(body),
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),data=dumps(body),
                      headers=headers,
                      node_name=node_name,
                      operation="post",
@@ -2584,7 +2590,7 @@ def qiy_nodes_pids_references(node_name, ub_references_url):
     b_references_url = unquote(ub_references_url)
     references_url = b64decode(b_references_url).decode()
 
-    r = node_request( auth=(environ('QTT_USERNAME'),node_name=node_name,
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),node_name=node_name,
                      target=target,
                      url=references_url
                      )
@@ -2627,7 +2633,7 @@ def qiy_nodes_pids_references_feeds(node_name, ub_references_url, feed_id):
     references_url = b64decode(b_references_url).decode()
 
     query_parameters = {'id': feed_id}
-    r = node_request( auth=(environ('QTT_USERNAME'),node_name=node_name,
+    r = node_request( auth=(environ('QTT_USERNAME'),environ('QTT_PASSWORD')),node_name=node_name,
                      query_parameters=query_parameters,
                      target=target,
                      url=references_url
