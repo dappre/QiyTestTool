@@ -297,7 +297,7 @@ def node_events_listener__start(
     return thread
 
 
-def listen_to_node(queue, stop_listening, node_name="example_node_credential", target="dev2"):
+def listen_to_node(queue, stop_listening, node_name="example_node_credential", target=None):
     node_events_listener__start(event=stop_listening,
                                 node_name=node_name,
                                 queue=queue,
@@ -1241,7 +1241,7 @@ report:<br>
 def qiy_nodes(node_name):
     info("qiy_node({})".format(node_name))
 
-    u_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/qtn/Boxtel")
+    u_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/fr/Boxtel/Fikks_app_form/new.digid")
 
     if not node_is_accessible(node_name=node_name, target=target):
         body = "NB: The node is not accessible: please consider removing it's Qiy Node Credential."
@@ -2199,7 +2199,7 @@ def qiy_nodes_events_source(node_name):
 
         stop_listening = Event()
         queue = Queue()
-        listen_to_node(queue, stop_listening, node_name=node_name)
+        listen_to_node(queue, stop_listening, node_name=node_name, target=environ['TARGET'])
         info("{}: Events listener started.".format(listener_id))
 
         while True:
