@@ -88,7 +88,7 @@ if 'QTT_PASSWORD' not in environ:
 if 'TARGET' not in environ:
     critical("ERROR: No TARGET specified.")
     exit(1)
-if environ['TARGET'] not in ['local', 'dev2', 'acc']:
+if environ['TARGET'] not in ['local', 'dev2', 'acc', 'prod']:
     critical("ERROR: No valid TARGET specified.")
     exit(1)
 
@@ -1241,7 +1241,7 @@ report:<br>
 def qiy_nodes(node_name):
     info("qiy_node({})".format(node_name))
 
-    u_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/fr/Boxtel/Fikks_app_form/new.digid")
+    u_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/fr/Boxtel/Fikks_app_form/new")
 
     if not node_is_accessible(node_name=node_name, target=target):
         body = "NB: The node is not accessible: please consider removing it's Qiy Node Credential."
@@ -2893,7 +2893,10 @@ def qiy_nodes_proxy(node_name, path):
         mimetype = None
         if 'Content-Type' in response_to_str(r):
             mimetype = r.headers['Content-Type']
-        headers = {'Access-Control-Allow-Origin': '*'}
+        headers = {}
+
+        for h in r.headers:
+            headers[h]=r.headers[h]
 
         # replace server_url with proxy url in response json body
         server_url=node_endpoint(target=target).replace("api","")
