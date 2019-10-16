@@ -1,7 +1,8 @@
 git+https://github.com/digital-me/QiyNodeLib.git@master#egg=QiyNodeLib
-mod_wsgi
 Flask
 flask_sse
+flask_cors
 pymongo
 pytest
 python-dotenv
+mod_wsgi

@@ -9,6 +9,7 @@ from calendar import timegm
 from collections import OrderedDict
 from datetime import datetime
 from glob import glob
+from flask_cors import CORS
 from gzip import compress
 from gzip import decompress
 from html import escape
@@ -138,7 +139,7 @@ debug(configuration)
 info("Start")
 
 application = Flask(__name__)
-
+CORS(application)
 
 class NoDataReceivedException(Exception):
     def __init__(self):
