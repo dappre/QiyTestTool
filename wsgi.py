@@ -2678,21 +2678,22 @@ Feed {2}
 
 
 def qiy_node_proxy_path_to_qtn_url(path=None,request=None,target=None):
-    debug("'{}' '{}' '{}'".format(path,request,target))
     url=None
 
-    server_url=node_endpoint(target=target).replace("api","")
-    #print("server_url: '{}'".format(server_url))
-
-    url = "{}{}".format(server_url, path)
-    #print("url: '{}'".format(url))
-
+    server_url="{}/user".format(node_endpoint(target=target).split("/user/")[0])
+    
+    if not path is None:
+        if path[0]=="/":
+            url = "{}{}".format(server_url, path)
+        else:
+            url = "{}/{}".format(server_url, path)
+    
     if request.args:
         url = url + "?"
         for parameter in request.args:
             url = "{0}{1}={2}&".format(url, parameter, request.args[parameter])
         url = url[0:len(url) - 1]
-    debug("url: {}''".format(url))
+
     return url
 
 @application.route('/qiy_nodes/<node_name>/proxy/<path:path>', methods=['delete','get','head','option','post','put'])
@@ -2913,9 +2914,9 @@ def qiy_nodes_proxy(node_name, path):
             del(headers["Transfer-Encoding"])
 
         # replace server_url with proxy url in response json body
-        server_url=node_endpoint(target=target).replace("api","")
-        proxy_url="{}{}/".format(request.url_root,proxy_path)
-
+        server_url="{}/user".format(node_endpoint(target=target).split("/user/")[0])
+        proxy_url="{}{}".format(request.url_root,proxy_path)
+        
         text=r.text
         if not text is None:
             text=text.replace(server_url,proxy_url)
