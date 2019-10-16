@@ -966,15 +966,22 @@ def request_to_str(r):
 
 
 def response_to_str(response):
-    info("response: '{}'".format(response))
+    info("response: '{}', type: '{}'".format(response,type(response)))
     s = "\n-------------------------------------------------------------------------------------------\n"
     s = s + "Response:\n"
     s = s + str(response.status_code) + "\n"
     headers = response.headers
     for header in headers:
-        s = s + "{0}: {1}\n".format(header, headers[header])
+        if type(header) is str:
+            s = s + "{0}: {1}\n".format(header, headers[header])
+        else:
+            s = s + "{0}\n".format(header)
     s = s + "\n"
-    s = s + response.text
+    try:
+        body = str(response.text)
+    except AttributeError:
+        body = response.get_data(as_text=True)
+    s = s + str(body)
     s = s + "\n-------------------------------------------------------------------------------------------\n"
 
     return s
@@ -2898,6 +2905,13 @@ def qiy_nodes_proxy(node_name, path):
         for h in r.headers:
             headers[h]=r.headers[h]
 
+        if "Content-Encoding" in headers:
+            del(headers["Content-Encoding"])
+        if "Content-Length" in headers:
+            del(headers["Content-Length"])
+        if "Transfer-Encoding" in headers:
+            del(headers["Transfer-Encoding"])
+
         # replace server_url with proxy url in response json body
         server_url=node_endpoint(target=target).replace("api","")
         proxy_url="{}{}/".format(request.url_root,proxy_path)
@@ -2907,6 +2921,8 @@ def qiy_nodes_proxy(node_name, path):
             text=text.replace(server_url,proxy_url)
 
         response = Response(text, headers=headers, status=r.status_code, mimetype=mimetype)
+
+        info("Response from qtt: '{}'".format(response_to_str(response)))
 
     return response
 
