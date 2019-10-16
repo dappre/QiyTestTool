@@ -2442,6 +2442,7 @@ def qiy_nodes_feeds_request( node_name,
         "text": "Requesting feed."
     }
     headers = {
+        "Accept": "application/json",
         "Content-Type": "application/json"
     }
 
