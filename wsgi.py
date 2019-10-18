@@ -1249,7 +1249,19 @@ report:<br>
 def qiy_nodes(node_name):
     info("qiy_node({})".format(node_name))
 
-    u_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/fr/Boxtel/Fikks_app_form/new")
+    if target =="dev2":
+        u_boxtel_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/qtn/Boxtel")
+    elif target == "acc":
+        u_boxtel_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/qtn/Boxtel")
+    else:
+        u_boxtel_redirect_url = quote_plus(" https://www.e-inwoner.nl/prod/qtn/Boxtel")
+
+    if target =="dev2":
+        u_gestel_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/qtn/Sint-Michielsgestel")
+    elif target == "acc":
+        u_gestel_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/qtn/Sint-Michielsgestel")
+    else:
+        u_gestel_redirect_url = quote_plus(" https://www.e-inwoner.nl/prod/qtn/Sint-Michielsgestel")
 
     if not node_is_accessible(node_name=node_name, target=target):
         body = "NB: The node is not accessible: please consider removing it's Qiy Node Credential."
@@ -1271,10 +1283,11 @@ def qiy_nodes(node_name):
 <li><a href="/qiy_nodes/{0}/service_catalogue">Service Catalogue</a>
 <li><a href="/qiy_nodes/{0}/proxy/example_request">Proxy (example request)</a>
 <li><a href="/qiy_nodes/{0}/pids">Pids</a>
-<li><a href="/qiy_nodes/{0}/redirect_to_eformulieren/{1}">Redirect to Lost Lemon eFormulieren</a>
+<li><a href="/qiy_nodes/{0}/redirect_to_eformulieren/{1}">Redirect to Lost Lemon eFormulieren for Boxtel</a>
+<li><a href="/qiy_nodes/{0}/redirect_to_eformulieren/{2}">Redirect to Lost Lemon eFormulieren for Sint-Michielsgestel</a>
 <li><form action="/qiy_nodes/{0}/delete" method="post"><input type="submit" value="Delete node" onclick="return confirm('are you sure')"></form>
 </ul>
-""".format(node_name, u_redirect_url)
+""".format(node_name, u_boxtel_redirect_url, u_gestel_redirect_url)
 
     return """
 <h1>Test Node {0}</h1>
