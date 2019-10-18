@@ -2818,7 +2818,7 @@ def qiy_nodes_proxy(node_name, path):
 
         # Transport Authentication
         # - Use 'password'-header parameter if provided.
-        # - If not, use 'password'-header parameter if needed
+        # - If not, provide Transport Authentication if needed
         if 'password' in request.headers:
             info("Using provided Transport Authentication")
             headers['password']=request.headers['password']
@@ -2850,14 +2850,17 @@ def qiy_nodes_proxy(node_name, path):
             else:
                 info("No Transport Authentication")
 
-        # Use User and App Authentication when the 'Authorization-node-QTN'-header parameter has been provided.
+        # User Authentication
+        # - Use 'Authorization-node-QTN'-header parameter if provided.
+        # - If not, always provide User Authentication.
         if 'Authorization-node-QTN' in request.headers:
-            info("'Authorization-node-QTN' in header: providing User Authentication and App Authentication")
-            use_app_authentication=True
+            info("Using provided User Authentication")
+        else:
+            info("Providing User Authentication")
             use_user_authentication=True
             
         # Use App Authentication when the 'Authorization'-header parameter has been provided.
-        elif 'Authorization' in request.headers:
+        if 'Authorization' in request.headers:
             info("'Authorization' in header: providing App Authentication")
             use_app_authentication=True
 
