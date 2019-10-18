@@ -2811,21 +2811,54 @@ def qiy_nodes_proxy(node_name, path):
         # Forward other requests to Qiy Trust Network
         #
         info("Forwarding request")
+        headers = {}
         use_transport_authentication=False
         use_app_authentication=False
         use_user_authentication=False
 
-        # Use Transport, User and App Authentication when the 'password'-header parameter has been provided.
+        # Transport Authentication
+        # - Use 'password'-header parameter if provided.
+        # - If not, use 'password'-header parameter if needed
         if 'password' in request.headers:
-            use_transport_authentication=True
-            use_app_authentication=True
-            use_user_authentication=True
+            info("Using provided Transport Authentication")
+            headers['password']=request.headers['password']
+        else:
+        # - POST on ConnectionCreateEndpoint
+            if request.method.lower() == "post" and 'connecttokens' in request.url:
+                info("POST on ConnectionCreateEndpoint: providing Transport Authentication")
+                use_transport_authentication=True
+        # - POST on ConnectionFeedsEndpoint
+            elif request.method.lower() == "post" and 'connections' in request.url:
+                info("POST on ConnectionFeedsEndpoint: providing Transport Authentication")
+                use_transport_authentication=True
+        # - POST on ConnectTokenCreateEndpoint
+            elif request.method.lower() == "post" and 'connecttokens' in request.url:
+                info("POST on ConnectTokenCreateEndpoint: providing Transport Authentication")
+                use_transport_authentication=True
+        # - GET on MessagesEndpoint
+            elif request.method.lower() == "get" and 'mbox' in request.url:
+                info("GET on MessagesEndpoint: providing Transport Authentication")
+                use_transport_authentication=True
+        # - POST on MessagesEndpoint
+            elif request.method.lower() == "post" and 'mbox' in request.url:
+                info("POST on MessagesEndpoint: providing Transport Authentication")
+                use_transport_authentication=True
+        # - DELETE on SelfEndpoint
+            elif request.method.lower() == "delete" and 'owners/id' in request.url:
+                info("DELETE on SelfEndpoint: providing Transport Authentication")
+                use_transport_authentication=True
+            else:
+                info("No Transport Authentication")
+
         # Use User and App Authentication when the 'Authorization-node-QTN'-header parameter has been provided.
-        elif 'Authorization-node-QTN' in request.headers:
+        if 'Authorization-node-QTN' in request.headers:
+            info("'Authorization-node-QTN' in header: providing User Authentication and App Authentication")
             use_app_authentication=True
             use_user_authentication=True
-        elif 'Authorization' in request.headers:
+            
         # Use App Authentication when the 'Authorization'-header parameter has been provided.
+        elif 'Authorization' in request.headers:
+            info("'Authorization' in header: providing App Authentication")
             use_app_authentication=True
 
         #
@@ -2835,7 +2868,6 @@ def qiy_nodes_proxy(node_name, path):
         username=None
         password=None
         stream = None
-        headers = {}
 
         headers['Accept'] = 'application/json'
 
