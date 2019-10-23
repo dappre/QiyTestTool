@@ -1254,7 +1254,7 @@ def qiy_nodes(node_name):
     elif target == "acc":
         u_boxtel_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/qtn/Boxtel")
     else:
-        u_boxtel_redirect_url = quote_plus(" https://www.e-inwoner.nl/prod/qtn/Boxtel")
+        u_boxtel_redirect_url = quote_plus("https://www.e-inwoner.nl/prod/qtn/Boxtel")
 
     if target =="dev2":
         u_gestel_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/qtn/Sint-Michielsgestel")
