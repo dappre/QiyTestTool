@@ -1261,7 +1261,7 @@ def qiy_nodes(node_name):
     elif target == "acc":
         u_gestel_redirect_url = quote_plus("https://test-einwoner.lostlemon.nl/test/qtn/Sint-Michielsgestel")
     else:
-        u_gestel_redirect_url = quote_plus(" https://www.e-inwoner.nl/prod/qtn/Sint-Michielsgestel")
+        u_gestel_redirect_url = quote_plus("https://www.e-inwoner.nl/prod/qtn/Sint-Michielsgestel")
 
     if not node_is_accessible(node_name=node_name, target=target):
         body = "NB: The node is not accessible: please consider removing it's Qiy Node Credential."
